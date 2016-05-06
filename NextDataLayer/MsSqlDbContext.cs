@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading;
 
 namespace NextDataLayer
@@ -25,7 +26,8 @@ namespace NextDataLayer
                 {
                     using (var reader = command.ExecuteReader())
                     {
-                        var mapper = new DataReaderMapper<TEntity>();
+                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                        var mapper = new DataReaderMapper<TEntity>(columns);
                         while (reader.Read())
                             yield return mapper.MapFrom(reader);
                     }

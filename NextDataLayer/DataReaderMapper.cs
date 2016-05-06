@@ -9,19 +9,20 @@ namespace NextDataLayer
 {
     public class DataReaderMapper<T> where T : new()
     {
-        private readonly DataTable _tableSchema;
-        readonly List<PropertyInfo> _mappings;
+        private readonly IEnumerable<string> _columns;
 
-        public DataReaderMapper()
+        private readonly List<PropertyInfo> _mappings;
+
+        public DataReaderMapper(IEnumerable<string> columns)
         {
+            _columns = columns;
             this._mappings = Mappings();
         }
 
         // int part is column indices (ordinals)
         List<PropertyInfo> Mappings()
         {
-            
-            var properties = typeof(T).GetProperties().Where(x => x.CanWrite).ToList();
+            var properties = typeof(T).GetProperties().Where(x => x.CanWrite && _columns.Contains(x.Name)).ToList();
             CheckDuplicates(properties);
             return properties;
         }
