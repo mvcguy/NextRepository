@@ -7,7 +7,7 @@ namespace NextDataLayer
 {
     public class MsSqlRepository : IMsSqlRepository
     {
-        public MsSqlRepository(ISqlDbContext<SqlConnection, SqlCommand, CommandType, SqlBulkCopy, SqlBulkCopyOptions, SqlTransaction> sqlDbContext)
+        public MsSqlRepository(IMsSqlDbContext sqlDbContext)
         {
             SqlDbContext = sqlDbContext;
         }
@@ -39,12 +39,12 @@ namespace NextDataLayer
         /// <param name="timeOut"></param>
         /// <param name="preQueryOperation">Operation to perform before bulk insert in the same transaction</param>
         /// <param name="postQueryOperation">Operation to perform after bulk insert in the same trransaction</param>
-        public void BulkInsert<T>(string tableName, IList<T> records,SqlBulkCopyOptions sqlBulkCopyOptions, int batchSize = 5000, int timeOut = 500,
-            Func<SqlConnection, SqlTransaction, bool> preQueryOperation = null, Func<SqlConnection,SqlTransaction, bool> postQueryOperation = null)
+        public void BulkInsert<T>(string tableName, IList<T> records, SqlBulkCopyOptions sqlBulkCopyOptions, int batchSize = 5000, int timeOut = 500,
+            Func<SqlConnection, SqlTransaction, bool> preQueryOperation = null, Func<SqlConnection, SqlTransaction, bool> postQueryOperation = null)
         {
             SqlDbContext.BulkInsert(tableName, records, sqlBulkCopyOptions, batchSize, timeOut, preQueryOperation, postQueryOperation);
         }
 
-        public ISqlDbContext<SqlConnection, SqlCommand, CommandType, SqlBulkCopy, SqlBulkCopyOptions, SqlTransaction> SqlDbContext { get; }
+        public IMsSqlDbContext SqlDbContext { get; }
     }
 }

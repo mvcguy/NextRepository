@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace NextDataLayer
 {
-    public class MsSqlDbContext : ISqlDbContext<SqlConnection, SqlCommand, CommandType, SqlBulkCopy, SqlBulkCopyOptions, SqlTransaction>
+    public class MsSqlDbContext : IMsSqlDbContext
     {
         private readonly string _connectionString;
         private readonly int _commandTimeout;

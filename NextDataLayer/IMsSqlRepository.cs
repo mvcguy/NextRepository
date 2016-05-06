@@ -3,6 +3,8 @@ using System.Data.SqlClient;
 
 namespace NextDataLayer
 {
-    public interface IMsSqlRepository : IRepository<SqlConnection, SqlCommand, CommandType, SqlBulkCopy, SqlBulkCopyOptions, SqlTransaction>
-    { }
+    public interface IMsSqlRepository : IRepository<SqlConnection, CommandType, SqlBulkCopyOptions, SqlTransaction>
+    {
+        IMsSqlDbContext SqlDbContext { get; }
+    }
 }

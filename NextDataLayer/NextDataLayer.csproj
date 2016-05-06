@@ -45,6 +45,7 @@
     <Compile Include="DataReaderMapper.cs" />
     <Compile Include="IDbContextLog.cs" />
     <Compile Include="DatabaseFactory.cs" />
+    <Compile Include="IMsSqlDbContext.cs" />
     <Compile Include="IMsSqlRepository.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="ISqlDbContext.cs" />
