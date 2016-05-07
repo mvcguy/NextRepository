@@ -27,18 +27,7 @@ namespace NextRepository.Common
 
         private void CreateOrinalColumnMapping()
         {
-            //foreach (DataColumn columnInfo in _schemaTable.Columns)
-            //{
-            //    var firstRow = _schemaTable.Rows[0];
-            //    var tableName = firstRow["TableName"];
-            //    var ordinal = (int)firstRow["Ordinal"];
-            //    var columnName = firstRow["ColumnName"];
-
-            //    if (_ordinalColumnMapping.ContainsKey(ordinal)) continue;
-
-            //    _ordinalColumnMapping.Add(ordinal, string.Format("{0}_{1}", tableName, columnName));
-            //}
-
+           
             var zeroBasedIndex = false;
 
             foreach (DataRow myField in _schemaTable.Rows)
@@ -58,8 +47,7 @@ namespace NextRepository.Common
                 {
                     ordinal = ordinal - 1;
                 }
-
-                //var type = ordinal.GetType();
+                
                 var columnName = myField["BaseColumnName"];
                 if (_ordinalColumnMapping.ContainsKey(ordinal)) continue;
                 _ordinalColumnMapping.Add(ordinal, string.Format("{0}_{1}", tableName, columnName));
