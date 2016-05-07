@@ -1,5 +1,8 @@
+using NextRepository.Common;
+
 namespace Repository.MsSql.UnitTests
 {
+    [TableName("Products")]
     public class Product
     {
         public int Id { get; set; }

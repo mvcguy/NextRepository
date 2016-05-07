@@ -42,7 +42,7 @@ namespace Repository.MsSql
             {
                 using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
                 {
-                    using (var reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
                     {
                         var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
                         var mapper = new DataReaderMapper<object>(columns, reader.GetSchemaTable(), types);

@@ -1,7 +1,9 @@
 using System;
+using NextRepository.Common;
 
 namespace Repository.MsSql.UnitTests
 {
+    [TableName("ProductsLog")]
     public class ProductsLog
     {
         public int Id { get; set; }
