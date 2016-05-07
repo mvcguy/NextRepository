@@ -90,6 +90,20 @@ namespace Repository.MsSql.UnitTests
             Assert.AreEqual(2, GetProductsLog().Count());
         }
 
+
+        [TestMethod]
+        public void BulkInsert_Stress_Testing()
+        {
+            var products = new List<Product>();
+            for (var i = 0; i < 500000; i++)
+            {
+                var product = new Product() { Name = string.Format("Name-{0}", i), Description = string.Format("Description-{0}", i) };
+                products.Add(product);
+            }
+
+            _repository.BulkInsert("nextdatalayer.dbo.products", products, SqlBulkCopyOptions.Default, batchSize: 0);
+        }
+
         #region helpers
 
         private static void InitializeDatabase()

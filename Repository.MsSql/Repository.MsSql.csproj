@@ -41,13 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataReaderMapper.cs" />
     <Compile Include="IMsSqlDbContext.cs" />
     <Compile Include="IMsSqlRepository.cs" />
     <Compile Include="MsSqlDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MsSqlRepository.cs" />
-    <Compile Include="MsSqlExtentions.cs" />
     <Compile Include="MsSqlDbContext.cs" />
   </ItemGroup>
   <ItemGroup>

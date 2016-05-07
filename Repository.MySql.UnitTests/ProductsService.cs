@@ -35,5 +35,10 @@ namespace Repository.MySql.UnitTests
             }
 
         }
+
+        public string BuildQuery<T>()
+        {
+            return null;
+        }
     }
 }

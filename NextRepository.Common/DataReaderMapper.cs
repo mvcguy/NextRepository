@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Reflection;
 
-namespace Repository.MsSql
+namespace NextRepository.Common
 {
     public class DataReaderMapper<T> where T : new()
     {
