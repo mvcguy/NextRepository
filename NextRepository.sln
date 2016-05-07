@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextDataLayer", "NextDataLayer\NextDataLayer.csproj", "{46A5BC19-91C7-469E-8A36-93B4A971B43C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MsSql", "Repository.MsSql\Repository.MsSql.csproj", "{46A5BC19-91C7-469E-8A36-93B4A971B43C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextDataLayer.UnitTests", "NextDataLayer.UnitTests\NextDataLayer.UnitTests.csproj", "{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MsSql.UnitTests", "Repository.MsSql.UnitTests\Repository.MsSql.UnitTests.csproj", "{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextRepository.Common", "NextRepository.Common\NextRepository.Common.csproj", "{F8082F72-8043-4FD4-84C2-E425B464E867}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MySql", "Repository.MySql\Repository.MySql.csproj", "{215C9D42-DB34-4C45-8D9F-8FBDCC62E417}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MySql.UnitTests", "Repository.MySql.UnitTests\Repository.MySql.UnitTests.csproj", "{5EDC0F98-828D-4A5E-BFB9-38C8B7E2A94F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8082F72-8043-4FD4-84C2-E425B464E867}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8082F72-8043-4FD4-84C2-E425B464E867}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8082F72-8043-4FD4-84C2-E425B464E867}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8082F72-8043-4FD4-84C2-E425B464E867}.Release|Any CPU.Build.0 = Release|Any CPU
+		{215C9D42-DB34-4C45-8D9F-8FBDCC62E417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{215C9D42-DB34-4C45-8D9F-8FBDCC62E417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{215C9D42-DB34-4C45-8D9F-8FBDCC62E417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{215C9D42-DB34-4C45-8D9F-8FBDCC62E417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EDC0F98-828D-4A5E-BFB9-38C8B7E2A94F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EDC0F98-828D-4A5E-BFB9-38C8B7E2A94F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EDC0F98-828D-4A5E-BFB9-38C8B7E2A94F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EDC0F98-828D-4A5E-BFB9-38C8B7E2A94F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
