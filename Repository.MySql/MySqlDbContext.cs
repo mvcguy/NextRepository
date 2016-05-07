@@ -225,12 +225,15 @@ namespace Repository.MySql
             MySqlTransaction transaction, int batchSize, int timeOut, string tableName)
         {
 
+            //references:
+            //http://stackoverflow.com/questions/30615443/bulk-copy-a-datatable-into-mysql-similar-to-system-data-sqlclient-sqlbulkcopy
+            //http://stackoverflow.com/questions/25323560/most-efficient-way-to-insert-rows-into-mysql-database
             var sqlBulkLoader = new MySqlBulkLoader(connection)
             {
                 Timeout = timeOut,
                 TableName = tableName,
-                //FileName = tempCsvFileSpec,
                 FieldTerminator = ",",
+                LineTerminator = "\r\n",
                 FieldQuotationCharacter = '"'
             };
 

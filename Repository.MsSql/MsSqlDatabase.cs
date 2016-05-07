@@ -1,7 +1,8 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using NextRepository.Common;
 
-namespace NextRepository.Common
+namespace Repository.MsSql
 {
     public class MsSqlDatabase : Database
     {

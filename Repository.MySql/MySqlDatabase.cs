@@ -1,7 +1,8 @@
 ﻿using System.Data;
 using MySql.Data.MySqlClient;
+using NextRepository.Common;
 
-namespace NextRepository.Common
+namespace Repository.MySql
 {
     public class MySqlDatabase : Database
     {

@@ -6,6 +6,10 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MsSql", "Repository.MsSql\Repository.MsSql.csproj", "{46A5BC19-91C7-469E-8A36-93B4A971B43C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository.MsSql.UnitTests", "Repository.MsSql.UnitTests\Repository.MsSql.UnitTests.csproj", "{B23A7D32-B5EB-4272-A7D6-4E7D0930167A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{46A5BC19-91C7-469E-8A36-93B4A971B43C} = {46A5BC19-91C7-469E-8A36-93B4A971B43C}
+		{F8082F72-8043-4FD4-84C2-E425B464E867} = {F8082F72-8043-4FD4-84C2-E425B464E867}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextRepository.Common", "NextRepository.Common\NextRepository.Common.csproj", "{F8082F72-8043-4FD4-84C2-E425B464E867}"
 EndProject

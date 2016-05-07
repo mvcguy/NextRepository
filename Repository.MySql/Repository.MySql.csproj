@@ -47,6 +47,7 @@
     <Compile Include="DataReaderMapper.cs" />
     <Compile Include="IMySqlDbContext.cs" />
     <Compile Include="IMySqlRepository.cs" />
+    <Compile Include="MySqlDatabase.cs" />
     <Compile Include="MySqlDbContext.cs" />
     <Compile Include="MySqlExtentions.cs" />
     <Compile Include="MySqlRepository.cs" />

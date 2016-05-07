@@ -83,7 +83,7 @@
       <Name>NextRepository.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\Repository.MsSql\Repository.MsSql.csproj">
-      <Project>{46a5bc19-91c7-469e-8a36-93b4a971b43c}</Project>
+      <Project>{46A5BC19-91C7-469E-8A36-93B4A971B43C}</Project>
       <Name>Repository.MsSql</Name>
     </ProjectReference>
   </ItemGroup>
