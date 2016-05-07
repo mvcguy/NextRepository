@@ -95,13 +95,13 @@ namespace Repository.MySql.UnitTests
         public void BulkInsert_Stress_Testing()
         {
             var products = new List<Product>();
-            for (var i = 0; i < 1000000; i++)
+            for (var i = 0; i < 500000; i++)
             {
                 var product = new Product() { Name = string.Format("Name-{0}", i), Description = string.Format("Description-{0}", i) };
                 products.Add(product);
             }
 
-            _repository.BulkInsert("nextdatalayer.products", products, SqlBulkCopyOptions.Default,batchSize:100000);
+            _repository.BulkInsert("nextdatalayer.products", products, SqlBulkCopyOptions.Default,batchSize: 0);
         }
 
         #region helpers

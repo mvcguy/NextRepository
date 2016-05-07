@@ -108,7 +108,7 @@ namespace Repository.MySql
             }
         }
 
-        public IEnumerable<IList<T>> Split<T>(List<T> input, int chunkSize)
+        public virtual IEnumerable<IList<T>> Split<T>(List<T> input, int chunkSize)
         {
             return Enumerable.Range(0, (input.Count - 1) / chunkSize + 1)
                      .Select(i => input.GetRange(i * chunkSize, Math.Min(chunkSize, input.Count - i * chunkSize)))
@@ -118,29 +118,9 @@ namespace Repository.MySql
         public virtual void BulkInsert<T>(string tableName, IList<T> records, SqlBulkCopyOptions bulkCopyOptions = SqlBulkCopyOptions.Default, int batchSize = 5000, int timeOut = 500,
             Func<MySqlConnection, MySqlTransaction, bool> preQueryOperation = null, Func<MySqlConnection, MySqlTransaction, bool> postQueryOperation = null)
         {
-            string tempCsvFileSpec = string.Format("{0}-dump.csv", Guid.NewGuid());
-
-            if (records.Count > batchSize)
+            if (batchSize <= 0 || batchSize > records.Count)
             {
-                var batches = Split((List<T>) records, batchSize);
-                foreach (var batch in batches)
-                {
-                    var sqlTable = batch.ToDataTable();
-                    using (var writer = new StreamWriter(tempCsvFileSpec, true))
-                    {
-                        Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
-                    }
-                }
-
-            }
-
-            else
-            {
-                var sqlTable = records.ToDataTable();
-                using (var writer = new StreamWriter(tempCsvFileSpec, false))
-                {
-                    Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
-                }
+                batchSize = records.Count;
             }
 
             using (var connection = InitializeConnection())
@@ -164,11 +144,12 @@ namespace Repository.MySql
 
                         var bulkCopy = GetBulkCopy(connection, SqlBulkCopyOptions.Default, transaction, batchSize, bulkCopyTimeout, tableName);
 
-                        bulkCopy.FileName = tempCsvFileSpec;
+                        var batches = Split((List<T>)records, batchSize);
 
-                        bulkCopy.Load();
-
-                        File.Delete(tempCsvFileSpec);
+                        foreach (var batch in batches)
+                        {
+                            WriteInBulk(batch, bulkCopy);
+                        }
 
                         if (postQueryOperation != null)
                         {
@@ -188,6 +169,42 @@ namespace Repository.MySql
                         throw;
                     }
 
+                }
+            }
+        }
+
+        public virtual void WriteInBulk<T>(IList<T> batch, MySqlBulkLoader bulkCopy)
+        {
+            string csvFileName = string.Format("{0}-dump.csv", Guid.NewGuid());
+            CreateTemporaryCsvFile(batch, csvFileName);
+            bulkCopy.FileName = csvFileName;
+            bulkCopy.Load();
+            File.Delete(csvFileName);
+        }
+
+        public virtual void CreateTemporaryCsvFile<T>(IList<T> records, string tempCsvFileName)
+        {
+            //write in chunks of 5000 records
+            const int batchSize = 5000;
+            if (records.Count > batchSize)
+            {
+                var batches = Split((List<T>)records, batchSize);
+                foreach (var batch in batches)
+                {
+                    var sqlTable = batch.ToDataTable();
+                    using (var writer = new StreamWriter(tempCsvFileName, true))
+                    {
+                        Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
+                    }
+                }
+            }
+
+            else
+            {
+                var sqlTable = records.ToDataTable();
+                using (var writer = new StreamWriter(tempCsvFileName, false))
+                {
+                    Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
                 }
             }
         }
