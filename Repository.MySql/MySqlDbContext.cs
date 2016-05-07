@@ -30,7 +30,7 @@ namespace Repository.MySql
                     using (var reader = command.ExecuteReader())
                     {
                         var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
-                        var mapper = new DataReaderMapper<TEntity>(columns);
+                        var mapper = new DataReaderMapper<TEntity>(columns,reader.GetSchemaTable());
                         while (reader.Read())
                             yield return mapper.MapFrom(reader);
                     }

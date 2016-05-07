@@ -104,6 +104,14 @@ namespace Repository.MySql.UnitTests
             _repository.BulkInsert("nextdatalayer.products", products, SqlBulkCopyOptions.Default,batchSize: 0);
         }
 
+        [TestMethod]
+        public void Query_Dynamic_Type()
+        {
+            var products = _repository.Query<dynamic>("SELECT * from nextdatalayer.products cross join nextdatalayer.productslog ", CommandType.Text).ToList();
+
+            Assert.IsTrue(products.Any());
+        }
+
         #region helpers
 
         private static void InitializeDatabase()

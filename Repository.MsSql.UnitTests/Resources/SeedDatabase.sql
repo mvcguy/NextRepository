@@ -10,3 +10,13 @@ IF  NOT EXISTS (SELECT * from products )
 
 	END
 
+	IF  NOT EXISTS (SELECT * from productslog )
+	BEGIN
+
+	INSERT INTO ProductsLog ([Message],[LastUpdated]) values
+		('Text-Message1',getdate()), 
+		('Text-Message2',getdate()),
+		('Text-Message3',getdate())
+
+	END
+

@@ -104,6 +104,14 @@ namespace Repository.MsSql.UnitTests
             _repository.BulkInsert("nextdatalayer.dbo.products", products, SqlBulkCopyOptions.Default, batchSize: 0);
         }
 
+        [TestMethod]
+        public void Query_Dynamic_Type()
+        {
+            var products = _repository.Query<dynamic>("SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ", CommandType.Text).ToList();
+
+            Assert.IsTrue(products.Any());
+        }
+
         #region helpers
 
         private static void InitializeDatabase()
