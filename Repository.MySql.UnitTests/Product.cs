@@ -1,5 +1,8 @@
+using NextRepository.Common;
+
 namespace Repository.MySql.UnitTests
 {
+    [TableName("Products")]
     public class Product
     {
         public int Id { get; set; }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -30,15 +29,12 @@ namespace Repository.MySql.UnitTests
             {
                 const string sql = "INSERT INTO NextDataLayer.Products (Name, Description) VALUES (@Name,@Description);SELECT LAST_INSERT_ID() AS id;";
                 var cmd = _repository.SqlDbContext.GetSqlCommand(sql, product, CommandType.Text, connection, null);
-                var id = (ulong) cmd.ExecuteScalar();
-               product.Id = (int)id;
+                var id = (ulong)cmd.ExecuteScalar();
+                product.Id = (int)id;
             }
 
         }
-
-        public string BuildQuery<T>()
-        {
-            return null;
-        }
+        
     }
+
 }

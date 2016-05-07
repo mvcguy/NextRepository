@@ -25,12 +25,29 @@ namespace Repository.MsSql
             {
                 using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
                 {
-                    using (var reader = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
                     {
                         var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
                         var mapper = new DataReaderMapper<TEntity>(columns,reader.GetSchemaTable());
                         while (reader.Read())
                             yield return mapper.MapFrom(reader);
+                    }
+                }
+            }
+        }
+
+        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType, object paramCollection = null, params Type[] types)
+        {
+            using (var connection = InitializeConnection())
+            {
+                using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                        var mapper = new DataReaderMapper<object>(columns, reader.GetSchemaTable(), types);
+                        while (reader.Read())
+                            yield return mapper.MapFromMultpleTables(reader);
                     }
                 }
             }

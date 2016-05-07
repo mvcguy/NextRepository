@@ -38,6 +38,23 @@ namespace Repository.MySql
             }
         }
 
+        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType, object paramCollection = null, params Type[] types)
+        {
+            using (var connection = InitializeConnection())
+            {
+                using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                        var mapper = new DataReaderMapper<object>(columns, reader.GetSchemaTable(), types);
+                        while (reader.Read())
+                            yield return mapper.MapFromMultpleTables(reader);
+                    }
+                }
+            }
+        }
+
         public virtual MySqlConnection InitializeConnection()
         {
             var connection = DatabaseFactory.CreateDatabaseConnection(typeof(MySqlDatabase)).GetConnection(_connectionString) as MySqlConnection;

@@ -9,10 +9,12 @@ namespace NextRepository.Common
             Func<TDbConnection, TTransaction, bool> preQueryOperation = null, Func<TDbConnection, TTransaction, bool> postQueryOperation = null);
 
         int NonQuery(string sql, TCommandType commandType, object paramCollection = null, bool useTransaction = true,
-            Func<TDbConnection, TTransaction, bool> preQueryOperation = null, Func<TDbConnection,TTransaction, bool> postQueryOperation = null);
+            Func<TDbConnection, TTransaction, bool> preQueryOperation = null, Func<TDbConnection, TTransaction, bool> postQueryOperation = null);
 
         IEnumerable<TEntity> ExecuteQuery<TEntity>(string sql, TCommandType commandType, object paramCollection = null) where TEntity : new();
 
+        IEnumerable<object> ExecuteMultiQuery(string sql, TCommandType commandType, object paramCollection = null, params Type[] types);
+        
         TDbConnection InitializeConnection();
 
         void OpenConnection(TDbConnection sqlConnection);

@@ -13,5 +13,7 @@ namespace NextRepository.Common
 
         IEnumerable<TEntity> Query<TEntity>(string sql, TCommandType commandType, object paramValueCollection = null) where TEntity : new();
 
+        IEnumerable<object> ExecuteMultiQuery(string sql, TCommandType commandType, object paramCollection = null, params Type[] types);
+
     }
 }

@@ -95,7 +95,7 @@ namespace Repository.MsSql.UnitTests
         public void BulkInsert_Stress_Testing()
         {
             var products = new List<Product>();
-            for (var i = 0; i < 500000; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var product = new Product() { Name = string.Format("Name-{0}", i), Description = string.Format("Description-{0}", i) };
                 products.Add(product);
@@ -110,6 +110,15 @@ namespace Repository.MsSql.UnitTests
             var products = _repository.Query<dynamic>("SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ", CommandType.Text).ToList();
 
             Assert.IsTrue(products.Any());
+        }
+        
+        [TestMethod]
+        public void Query_Multiple_Types()
+        {
+            const string sql = "SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ";
+            var results = _repository.ExecuteMultiQuery(sql, CommandType.Text, null, typeof(Product), typeof(ProductsLog)).ToList();
+
+            Assert.IsTrue(results.Any());
         }
 
         #region helpers

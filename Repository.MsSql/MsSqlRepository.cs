@@ -22,6 +22,11 @@ namespace Repository.MsSql
             return SqlDbContext.ExecuteQuery<TEntity>(sql, commandType, paramValueCollection);
         }
 
+        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType, object paramCollection = null, params Type[] types)
+        {
+            return SqlDbContext.ExecuteMultiQuery(sql, commandType, paramCollection, types);
+        }
+
         public int NonQuery(string sql, CommandType commandType = CommandType.Text, object paramCollection = null, bool useTransaction = true,
             Func<SqlConnection, SqlTransaction, bool> preQueryOperation = null, Func<SqlConnection, SqlTransaction, bool> postQueryOperation = null)
         {
