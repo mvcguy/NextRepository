@@ -108,17 +108,47 @@ namespace Repository.MySql
             }
         }
 
+        public IEnumerable<IList<T>> Split<T>(List<T> input, int chunkSize)
+        {
+            return Enumerable.Range(0, (input.Count - 1) / chunkSize + 1)
+                     .Select(i => input.GetRange(i * chunkSize, Math.Min(chunkSize, input.Count - i * chunkSize)))
+                     .ToList();
+        }
+
         public virtual void BulkInsert<T>(string tableName, IList<T> records, SqlBulkCopyOptions bulkCopyOptions = SqlBulkCopyOptions.Default, int batchSize = 5000, int timeOut = 500,
             Func<MySqlConnection, MySqlTransaction, bool> preQueryOperation = null, Func<MySqlConnection, MySqlTransaction, bool> postQueryOperation = null)
         {
-            var sqlTable = records.ToDataTable();
+            string tempCsvFileSpec = string.Format("{0}-dump.csv", Guid.NewGuid());
 
-            var bulkCopyTimeout = _commandTimeout < timeOut
-                            ? timeOut
-                            : _commandTimeout;
+            if (records.Count > batchSize)
+            {
+                var batches = Split((List<T>) records, batchSize);
+                foreach (var batch in batches)
+                {
+                    var sqlTable = batch.ToDataTable();
+                    using (var writer = new StreamWriter(tempCsvFileSpec, true))
+                    {
+                        Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
+                    }
+                }
+
+            }
+
+            else
+            {
+                var sqlTable = records.ToDataTable();
+                using (var writer = new StreamWriter(tempCsvFileSpec, false))
+                {
+                    Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
+                }
+            }
 
             using (var connection = InitializeConnection())
             {
+                var bulkCopyTimeout = _commandTimeout < timeOut
+                                ? timeOut
+                                : _commandTimeout;
+
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
@@ -130,13 +160,6 @@ namespace Repository.MySql
                             {
                                 return;
                             }
-                        }
-
-                        string tempCsvFileSpec = string.Format("{0}-dump.csv", Guid.NewGuid());
-
-                        using (StreamWriter writer = new StreamWriter(tempCsvFileSpec))
-                        {
-                            Rfc4180Writer.WriteDataTable(sqlTable, writer, false);
                         }
 
                         var bulkCopy = GetBulkCopy(connection, SqlBulkCopyOptions.Default, transaction, batchSize, bulkCopyTimeout, tableName);
@@ -234,7 +257,7 @@ namespace Repository.MySql
                 TableName = tableName,
                 FieldTerminator = ",",
                 LineTerminator = "\r\n",
-                FieldQuotationCharacter = '"'
+                FieldQuotationCharacter = '"',
             };
 
             return sqlBulkLoader;

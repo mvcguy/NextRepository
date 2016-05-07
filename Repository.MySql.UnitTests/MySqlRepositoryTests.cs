@@ -11,7 +11,7 @@ using Repository.MySql.UnitTests.Properties;
 namespace Repository.MySql.UnitTests
 {
     [TestClass]
-    public class MsSqlRepositoryTests
+    public class MySqlRepositoryTests
     {
         private static IMySqlRepository _repository;
 
@@ -89,6 +89,19 @@ namespace Repository.MySql.UnitTests
             _repository.BulkInsert("NextDataLayer.Products", products, SqlBulkCopyOptions.Default, preQueryOperation: preOperation, postQueryOperation: postOperation);
 
             Assert.AreEqual(2, GetProductsLog().Count());
+        }
+
+        [TestMethod]
+        public void BulkInsert_Stress_Testing()
+        {
+            var products = new List<Product>();
+            for (var i = 0; i < 1000000; i++)
+            {
+                var product = new Product() { Name = string.Format("Name-{0}", i), Description = string.Format("Description-{0}", i) };
+                products.Add(product);
+            }
+
+            _repository.BulkInsert("nextdatalayer.products", products, SqlBulkCopyOptions.Default,batchSize:100000);
         }
 
         #region helpers
