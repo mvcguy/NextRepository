@@ -6,7 +6,10 @@
   },
 
   "resource": [
-    "Resources/CreateDatabase.sql"
+    "Resources/CreateDatabaseMySql.sql",
+    "Resources/CreateDatabaseMsSql1.sql",
+    "Resources/CreateDatabaseMsSql2.sql",
+    "Resources/CreateDatabaseMsSql3.sql"
   ],
 
   "dependencies": {

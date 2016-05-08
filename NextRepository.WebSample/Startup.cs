@@ -93,7 +93,8 @@ namespace NextRepository.WebSample
                 var provider = ctx.ApplicationServices;
                 var seedService = provider.GetService<SeedDatabaseService>();
 
-                seedService.DropCreateDatabase();
+                seedService.DropCreateDatabaseMySql();
+                seedService.DropCreateDatabaseMsSql();
 
                 await next();
             });

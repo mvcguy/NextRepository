@@ -23,15 +23,16 @@ namespace NextRepository.WebSample.Controllers
 
         public IActionResult Index()
         {
+            ViewData["RepoType"] = "My SQL";
             var products = _mySqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.PRODUCTS").ToList();
             return View(products);
         }
 
-        public IActionResult About()
+        public IActionResult MsSql()
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
+            ViewData["RepoType"] = "MS SQL";
+            var products = _msSqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.dbo.PRODUCTS").ToList();
+            return View(products);
         }
 
         public IActionResult Contact()
