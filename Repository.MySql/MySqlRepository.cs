@@ -23,7 +23,7 @@ namespace Repository.MySql
             return SqlDbContext.ExecuteQuery<TEntity>(sql, commandType, paramValueCollection);
         }
 
-        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType, object paramCollection = null, params Type[] types)
+        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType = CommandType.Text, object paramCollection = null, params Type[] types)
         {
             return SqlDbContext.ExecuteMultiQuery(sql, commandType, paramCollection, types);
         }
@@ -45,7 +45,7 @@ namespace Repository.MySql
         /// <param name="timeOut"></param>
         /// <param name="preQueryOperation">Operation to perform before bulk insert in the same transaction</param>
         /// <param name="postQueryOperation">Operation to perform after bulk insert in the same trransaction</param>
-        public void BulkInsert<T>(string tableName, IList<T> records, SqlBulkCopyOptions sqlBulkCopyOptions, int batchSize = 5000, int timeOut = 500,
+        public void BulkInsert<T>(string tableName, IList<T> records, SqlBulkCopyOptions sqlBulkCopyOptions = SqlBulkCopyOptions.Default, int batchSize = 5000, int timeOut = 500,
             Func<MySqlConnection, MySqlTransaction, bool> preQueryOperation = null, Func<MySqlConnection, MySqlTransaction, bool> postQueryOperation = null)
         {
             SqlDbContext.BulkInsert(tableName, records, sqlBulkCopyOptions, batchSize, timeOut, preQueryOperation, postQueryOperation);

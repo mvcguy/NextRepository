@@ -23,7 +23,7 @@ namespace NextRepository.WebSample.Controllers
 
         public IActionResult Index()
         {
-            var products = _mySqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.PRODUCTS", CommandType.Text).ToList();
+            var products = _mySqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.PRODUCTS").ToList();
             return View(products);
         }
 
