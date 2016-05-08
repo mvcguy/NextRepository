@@ -4,7 +4,9 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using NextRepository.WebSample.AppConstants;
 using NextRepository.WebSample.Models;
+using NextRepository.WebSample.Services;
 using Repository.MsSql;
 using Repository.MySql;
 
@@ -14,24 +16,26 @@ namespace NextRepository.WebSample.Controllers
     {
         private readonly IMySqlRepository _mySqlRepository;
         private readonly IMsSqlRepository _msSqlRepository;
+        private readonly AppQueriesService _appQueriesService;
 
-        public HomeController(IMySqlRepository mySqlRepository, IMsSqlRepository msSqlRepository)
+        public HomeController(IMySqlRepository mySqlRepository, IMsSqlRepository msSqlRepository,AppQueriesService appQueriesService)
         {
             _mySqlRepository = mySqlRepository;
             _msSqlRepository = msSqlRepository;
+            _appQueriesService = appQueriesService;
         }
 
         public IActionResult Index()
         {
             ViewData["RepoType"] = "My SQL";
-            var products = _mySqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.PRODUCTS").ToList();
+            var products = _mySqlRepository.Query<Product>(_appQueriesService.MySqlQueries[DatabaseConstants.GetProducts] as string).ToList();
             return View(products);
         }
 
         public IActionResult MsSql()
         {
             ViewData["RepoType"] = "MS SQL";
-            var products = _msSqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.dbo.PRODUCTS").ToList();
+            var products = _msSqlRepository.Query<Product>(_appQueriesService.MsSqlQueries[DatabaseConstants.GetProducts] as string).ToList();
             return View(products);
         }
 

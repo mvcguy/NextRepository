@@ -24,7 +24,10 @@
 	INSERT INTO Products (Name,Description) values	
 	('Galaxy S6','3GB RAM 32 Internal Storage'),
 	('Lenovo L430','Pentium I5 960GB SSD'),
-	('Logitech Headset','wireless, USB recharege');
+	('Logitech Headset','wireless, USB recharege'),
+	('Milk','1 Litre pack'), 
+	('Apples','6 stick in pack'),
+	('Motorcycle','Kawasaki KW6679');
 
 
 	INSERT INTO ProductsLog (Message,LastUpdated) values

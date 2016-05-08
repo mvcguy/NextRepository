@@ -1,3 +1,5 @@
 ﻿{
-
+  "GetProducts": "SELECT * FROM NextDatalayerWeb.dbo.Products",
+  "GetProductsLog": "SELECT * FROM NextDatalayerWeb.dbo.ProductsLog",
+  "ProductsAndLog": "SELECT * FROM NextDatalayerWeb.dbo.Products CROS JOIN NextDatalayerWeb.dbo.ProductsLog"
 }
