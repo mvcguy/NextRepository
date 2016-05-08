@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
+using NextRepository.WebSample.Models;
 using Repository.MsSql;
 using Repository.MySql;
 
@@ -21,7 +23,8 @@ namespace NextRepository.WebSample.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            var products = _mySqlRepository.Query<Product>("SELECT * FROM NextDatalayerWeb.PRODUCTS", CommandType.Text).ToList();
+            return View(products);
         }
 
         public IActionResult About()
