@@ -7,5 +7,6 @@ namespace NextRepository.WebSample.ViewModels
 {
     public class ProductsHistoryViewModel
     {
+
     }
 }

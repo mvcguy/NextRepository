@@ -9,7 +9,9 @@
     "Resources/CreateDatabaseMySql.sql",
     "Resources/CreateDatabaseMsSql1.sql",
     "Resources/CreateDatabaseMsSql2.sql",
-    "Resources/CreateDatabaseMsSql3.sql"
+    "Resources/CreateDatabaseMsSql3.sql",
+    "Resources/AppQueriesMsSql.json",
+    "Resources/AppQueriesMySql.json"
   ],
 
   "dependencies": {

@@ -1,0 +1,5 @@
+﻿{
+  "GetProducts": "SELECT * FROM NextDatalayerWeb.Products",
+  "GetProductsLog": "SELECT * FROM NextDatalayerWeb.ProductsLog",
+  "ProductsAndLog": "SELECT * FROM NextDatalayerWeb.Products CROS JOIN NextDatalayerWeb.ProductsLog"
+}

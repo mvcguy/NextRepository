@@ -60,7 +60,7 @@ namespace NextRepository.WebSample
             });
 
             services.AddSingleton<SeedDatabaseService>();
-
+            services.AddSingleton<AppQueriesService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,6 +88,7 @@ namespace NextRepository.WebSample
 
             app.UseStaticFiles();
 
+            //if this is the right way to initialize stuff?
             app.Use(async (ctx, next) =>
             {
                 var provider = ctx.ApplicationServices;
@@ -98,9 +99,17 @@ namespace NextRepository.WebSample
 
                 await next();
             });
-            
-            // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
+            //if this is the right way to initialize stuff?
+            app.Use(async (ctx, next) =>
+            {
+                var provider = ctx.ApplicationServices;
+                var appQueriesService = provider.GetService<AppQueriesService>();
+                appQueriesService.Init();
+
+                await next();
+            });
+            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
