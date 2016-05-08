@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net46": {
+      "wrappedProject": "../../Repository.MySql/Repository.MySql.csproj",
+      "bin": {
+        "assembly": "../../Repository.MySql/obj/{configuration}/Repository.MySql.dll",
+        "pdb": "../../Repository.MySql/obj/{configuration}/Repository.MySql.pdb"
+      },
+      "dependencies": {
+        "MySql.Data": "6.9.8",
+        "NextRepository.Common": "1.0.0-*"
+      }
+    }
+  }
+}

@@ -18,8 +18,7 @@ namespace NextRepository.Common
         private readonly IDictionary<string, List<PropertyInfo>> _tableAndTypeProperties;
         private readonly IDictionary<string, string> _tableAndTypeMapping;
         private readonly IDictionary<string, IList<string>> _tableAndColumns;
-
-
+        
         public DataReaderMapper(IEnumerable<string> columns, DataTable schemaTable)
         {
             _columns = columns;
@@ -37,8 +36,7 @@ namespace NextRepository.Common
             _tableAndTypeMapping = new Dictionary<string, string>();
             InitilizeTableAndTypeProperties();
         }
-
-
+        
         private void CreateOrinalColumnMapping()
         {
             //Reference

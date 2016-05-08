@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net46": {
+      "wrappedProject": "../../Repository.MsSql/Repository.MsSql.csproj",
+      "bin": {
+        "assembly": "../../Repository.MsSql/obj/{configuration}/Repository.MsSql.dll",
+        "pdb": "../../Repository.MsSql/obj/{configuration}/Repository.MsSql.pdb"
+      },
+      "dependencies": {
+        "NextRepository.Common": "1.0.0-*"
+      }
+    }
+  }
+}

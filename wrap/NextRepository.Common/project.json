@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net46": {
+      "wrappedProject": "../../NextRepository.Common/NextRepository.Common.csproj",
+      "bin": {
+        "assembly": "../../NextRepository.Common/obj/{configuration}/NextRepository.Common.dll",
+        "pdb": "../../NextRepository.Common/obj/{configuration}/NextRepository.Common.pdb"
+      }
+    }
+  }
+}
