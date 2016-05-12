@@ -17,7 +17,7 @@ namespace NextRepository.WebSample.Services
         private readonly IMsSqlRepository _msSqlRepository;
         private static bool _mySqlSeeded = false;
         private static bool _msSqlSeeded = false;
-        private Assembly assembly;
+        private Assembly _assembly;
 
         public SeedDatabaseService(IMySqlRepository mySqlRepository,IMsSqlRepository msSqlRepository)
         {
@@ -71,12 +71,12 @@ namespace NextRepository.WebSample.Services
 
         public string GetResourceString(string resId)
         {
-            if (assembly == null)
+            if (_assembly == null)
             {
-                assembly = Assembly.GetExecutingAssembly();
+                _assembly = Assembly.GetExecutingAssembly();
             }
 
-            var resourceStream = assembly.GetManifestResourceStream(resId);
+            var resourceStream = _assembly.GetManifestResourceStream(resId);
             if (resourceStream == null) return string.Empty;
 
             using (var reader = new StreamReader(resourceStream, Encoding.UTF8))

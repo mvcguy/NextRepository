@@ -239,7 +239,7 @@ namespace Repository.MySql
                     {
                         foreach (var item in dictionary)
                         {
-                            var paramater = new SqlParameter(item.Key, item.Value ?? DBNull.Value);
+                            var paramater = new MySqlParameter(item.Key, item.Value ?? DBNull.Value);
                             cmd.Parameters.Add(paramater);
                         }
                     }
