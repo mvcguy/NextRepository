@@ -59,8 +59,10 @@ namespace NextRepository.WebSample
                 return new MsSqlRepository(connectionString);
             });
 
+            services.AddSingleton<ResoucesService>();
             services.AddSingleton<SeedDatabaseService>();
             services.AddSingleton<AppQueriesService>();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Repository.MsSql;
@@ -15,14 +14,15 @@ namespace NextRepository.WebSample.Services
     {
         private readonly IMySqlRepository _mySqlRepository;
         private readonly IMsSqlRepository _msSqlRepository;
+        private readonly ResoucesService _resoucesService;
         private static bool _mySqlSeeded = false;
         private static bool _msSqlSeeded = false;
-        private Assembly _assembly;
 
-        public SeedDatabaseService(IMySqlRepository mySqlRepository,IMsSqlRepository msSqlRepository)
+        public SeedDatabaseService(IMySqlRepository mySqlRepository,IMsSqlRepository msSqlRepository,ResoucesService resoucesService)
         {
             _mySqlRepository = mySqlRepository;
             _msSqlRepository = msSqlRepository;
+            _resoucesService = resoucesService;
         }
 
         public void DropCreateDatabaseMySql()
@@ -39,7 +39,7 @@ namespace NextRepository.WebSample.Services
                 return;
             }
 
-            sql = GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMySql.sql");
+            sql = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMySql.sql");
             _mySqlRepository.NonQuery(sql);
             _mySqlSeeded = true;
         }
@@ -58,9 +58,9 @@ namespace NextRepository.WebSample.Services
                 return;
             }
 
-            var createDbScript = GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql1.sql");
-            var createTblScript = GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql2.sql");
-            var seedScript = GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql3.sql");
+            var createDbScript = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql1.sql");
+            var createTblScript = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql2.sql");
+            var seedScript = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.CreateDatabaseMsSql3.sql");
 
             var x=_msSqlRepository.NonQuery(createDbScript, useTransaction: false);
             var y=_msSqlRepository.NonQuery(createTblScript, useTransaction: false);
@@ -68,22 +68,6 @@ namespace NextRepository.WebSample.Services
 
             _msSqlSeeded = true;
         }
-
-        public string GetResourceString(string resId)
-        {
-            if (_assembly == null)
-            {
-                _assembly = Assembly.GetExecutingAssembly();
-            }
-
-            var resourceStream = _assembly.GetManifestResourceStream(resId);
-            if (resourceStream == null) return string.Empty;
-
-            using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
+        
     }
 }

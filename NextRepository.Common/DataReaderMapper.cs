@@ -18,7 +18,7 @@ namespace NextRepository.Common
         private readonly IDictionary<string, List<PropertyInfo>> _tableAndTypeProperties;
         private readonly IDictionary<string, string> _tableAndTypeMapping;
         private readonly IDictionary<string, IList<string>> _tableAndColumns;
-        
+
         public DataReaderMapper(IEnumerable<string> columns, DataTable schemaTable)
         {
             _columns = columns;
@@ -36,7 +36,7 @@ namespace NextRepository.Common
             _tableAndTypeMapping = new Dictionary<string, string>();
             InitilizeTableAndTypeProperties();
         }
-        
+
         private void CreateOrinalColumnMapping()
         {
             //Reference
@@ -52,11 +52,11 @@ namespace NextRepository.Common
 
                 if (columnNameRaw is DBNull || tableNameRaw is DBNull || ordinalRaw is DBNull) continue;
 
-                var tableName = (string) tableNameRaw;
-                var ordinal = (int) ordinalRaw;
-                var columnName = (string) columnNameRaw;
+                var tableName = (string)tableNameRaw;
+                var ordinal = (int)ordinalRaw;
+                var columnName = (string)columnNameRaw;
 
-                if(string.IsNullOrWhiteSpace(tableName) || string.IsNullOrWhiteSpace(columnName) || ordinal<0) continue;
+                if (string.IsNullOrWhiteSpace(tableName) || string.IsNullOrWhiteSpace(columnName) || ordinal < 0) continue;
 
                 if (ordinal == 0)
                 {
@@ -108,23 +108,7 @@ namespace NextRepository.Common
 
         public T MapFrom(DbDataReader record)
         {
-            if (typeof(T) == typeof(object))
-            {
-                var item = new ExpandoObject() as IDictionary<string, object>;
-
-                foreach (var mapping in _ordinalColumnMapping)
-                {
-                    if (item.Keys.Contains(mapping.Value)) continue;
-                    item.Add(mapping.Value, record[mapping.Key]);
-                }
-                return (T)item;
-            }
-
-            var element = new T();
-            foreach (var map in _mappings)
-                map.SetValue(element, ChangeType(record[map.Name], map.PropertyType));
-
-            return element;
+            return MapFrom<T>(record);
         }
 
         public TType MapFrom<TType>(DbDataReader record) where TType : new()

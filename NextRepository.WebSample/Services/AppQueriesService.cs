@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -9,15 +8,16 @@ namespace NextRepository.WebSample.Services
 {
     public class AppQueriesService
     {
+        private readonly ResoucesService _resoucesService;
         public ConcurrentDictionary<string, dynamic> MsSqlQueries { get; private set; }
         public ConcurrentDictionary<string, dynamic> MySqlQueries { get; private set; }
 
         private string _mySqlJson;
         private string _msSqlJson;
-        private Assembly _assembly;
 
-        public AppQueriesService()
+        public AppQueriesService(ResoucesService resoucesService)
         {
+            _resoucesService = resoucesService;
             MsSqlQueries = new ConcurrentDictionary<string, dynamic>();
             MySqlQueries = new ConcurrentDictionary<string, dynamic>();
         }
@@ -47,30 +47,13 @@ namespace NextRepository.WebSample.Services
         {
             if (string.IsNullOrWhiteSpace(_mySqlJson))
             {
-                _mySqlJson = GetResourceString("NextRepository.WebSample.Resources.AppQueriesMySql.json");
+                _mySqlJson = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.AppQueriesMySql.json");
             }
             if (string.IsNullOrWhiteSpace(_msSqlJson))
             {
-                _msSqlJson = GetResourceString("NextRepository.WebSample.Resources.AppQueriesMsSql.json");
+                _msSqlJson = _resoucesService.GetResourceString("NextRepository.WebSample.Resources.AppQueriesMsSql.json");
             }
         }
-
-        protected virtual string GetResourceString(string resId)
-        {
-            if (_assembly == null)
-            {
-                _assembly = Assembly.GetExecutingAssembly();
-            }
-
-            var resourceStream = _assembly.GetManifestResourceStream(resId);
-            if (resourceStream == null) return string.Empty;
-
-            using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
 
     }
 }
