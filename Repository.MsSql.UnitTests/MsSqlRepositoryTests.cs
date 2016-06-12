@@ -17,7 +17,7 @@ namespace Repository.MsSql.UnitTests
         [AssemblyInitialize]
         public static void OnTestClassInit(TestContext context)
         {
-            _repository = new MsSqlRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            _repository = new MsSqlRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString, useCache: true);
             InitializeDatabase();
         }
 
@@ -44,7 +44,7 @@ namespace Repository.MsSql.UnitTests
         [TestMethod]
         public void Query_Sp_With_Params()
         {
-            var param = new {Name = "%Galaxy%"};
+            var param = new { Name = "%Galaxy%" };
             var producs = _repository.Query<Product>("NextDataLayer.dbo.GetProducts", CommandType.StoredProcedure, param);
 
             Assert.IsTrue(producs.Any());
@@ -107,16 +107,16 @@ namespace Repository.MsSql.UnitTests
         [TestMethod]
         public void Query_Dynamic_Type()
         {
-            var products = _repository.Query<dynamic>("SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ", CommandType.Text).ToList();
+            var products = _repository.Query<dynamic>("SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ").ToList();
 
             Assert.IsTrue(products.Any());
         }
-        
+
         [TestMethod]
         public void Query_Multiple_Types()
         {
             const string sql = "SELECT * from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog ";
-            var results = _repository.ExecuteMultiQuery(sql, CommandType.Text, null, typeof(Product), typeof(ProductsLog)).ToList();
+            var results = _repository.ExecuteMultiQuery(sql, types: new[] { typeof(Product), typeof(ProductsLog) }).ToList();
 
             Assert.IsTrue(results.Any());
         }

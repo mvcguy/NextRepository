@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NextRepository.MemCache
 {
-    public class QueryCache
+    public static class QueryCache
     {
         private static readonly ConcurrentDictionary<int, object> Store = new ConcurrentDictionary<int, object>();
 
@@ -17,9 +18,11 @@ namespace NextRepository.MemCache
 
         private static readonly ConcurrentDictionary<int, List<string>> QueryTables = new ConcurrentDictionary<int, List<string>>();
 
-        public object QueryStore(Func<DataSchema> action, string sql, string connection)
+        public static object QueryStore(Func<DataSchema> action, string sql, string connection, object paramCollection = null)
         {
-            var key = GetHash(sql, connection);
+            var normSql = NormalizedQuery(sql, paramCollection);
+
+            var key = GetHash(normSql, connection);
             object data;
 
             if (Store.ContainsKey(key))
@@ -33,7 +36,7 @@ namespace NextRepository.MemCache
                 data = dataSchema.Data;
                 if (!StoreKeys.ContainsKey(key))
                 {
-                    StoreKeys[key] = new[] { sql, connection };
+                    StoreKeys[key] = new[] { normSql, connection };
                 }
 
                 if (!QueryTables.ContainsKey(key))
@@ -45,7 +48,7 @@ namespace NextRepository.MemCache
             return data;
         }
 
-        public void InvalidateCache(string sql, string connection)
+        public static void InvalidateCache(string sql, string connection)
         {
             var matchedEntries = GetMatchedEntries(sql, connection);
             foreach (var matchedEntry in matchedEntries)
@@ -59,7 +62,7 @@ namespace NextRepository.MemCache
 
         }
 
-        private int GetHash(params string[] keys)
+        private static int GetHash(params string[] keys)
         {
             var keyStr = string.Empty;
 
@@ -71,7 +74,57 @@ namespace NextRepository.MemCache
             return keyStr.GetHashCode();
         }
 
-        private IEnumerable<int> GetMatchedEntries(string query, string connection)
+        private static string NormalizedQuery(string sql, object paramCollection = null)
+        {
+
+            if (paramCollection == null || paramCollection.GetType().IsSimpleType())
+                return sql.ToLower();
+
+
+            var normSql = sql.ToLower();
+            
+            var sqlParams = new List<SqlParameter>();
+
+            if (paramCollection.GetType() == typeof(Dictionary<string, object>) || paramCollection.GetType() == typeof(IDictionary<string, object>))
+            {
+                var dictionary = paramCollection as IDictionary<string, object>;
+                if (dictionary != null)
+                {
+                    foreach (var item in dictionary)
+                    {
+                        var paramater = new SqlParameter(item.Key, item.Value ?? DBNull.Value);
+                        sqlParams.Add(paramater);
+                    }
+                }
+            }
+
+            else if (paramCollection.GetType() == typeof(IEnumerable<SqlParameter>))
+            {
+                sqlParams = paramCollection as List<SqlParameter>;
+            }
+
+            else
+            {
+                foreach (var pInfo in paramCollection.GetType().GetProperties())
+                {
+                    var paramater = new SqlParameter(pInfo.Name, pInfo.GetValue(paramCollection, null) ?? DBNull.Value);
+                    sqlParams.Add(paramater);
+                }
+            }
+
+            if (sqlParams != null)
+            {
+                foreach (var sqlParameter in sqlParams)
+                {
+                    var paramName = string.Format("@{0}", sqlParameter.ParameterName.ToLower());
+                    normSql = normSql.Replace(paramName, sqlParameter.Value.GetHashCode().ToString());
+                }
+            }
+            
+            return normSql;
+        }
+
+        private static IEnumerable<int> GetMatchedEntries(string query, string connection)
         {
             var normQuery = query.Trim();
             var dml = normQuery.StartsWith("insert into", StringComparison.OrdinalIgnoreCase)
@@ -86,7 +139,7 @@ namespace NextRepository.MemCache
                 var m = r.Match(normQuery);
                 if (m.Success)
                 {
-                    tableName = m.Groups["table"].Value.ToLower().Split('.').Last();
+                    tableName = m.Groups["table"].Value.ToLower().Split('.').Last().Replace("[", "").Replace("]", "");
                 }
             }
 
@@ -117,7 +170,7 @@ namespace NextRepository.MemCache
             return tables;
         }
 
-        public void CleanCache()
+        public static void CleanCache()
         {
             Store.Clear();
             StoreKeys.Clear();
@@ -130,5 +183,36 @@ namespace NextRepository.MemCache
         public object Data { get; set; }
 
         public DataTable SchemaTable { get; set; }
+    }
+
+    internal static class Extensions
+    {
+        public static bool IsSimpleType(this Type type)
+        {
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            type = underlyingType ?? type;
+            var simpleTypes = new List<Type>
+                               {
+                                   typeof(byte),
+                                   typeof(sbyte),
+                                   typeof(short),
+                                   typeof(ushort),
+                                   typeof(int),
+                                   typeof(uint),
+                                   typeof(long),
+                                   typeof(ulong),
+                                   typeof(float),
+                                   typeof(double),
+                                   typeof(decimal),
+                                   typeof(bool),
+                                   typeof(string),
+                                   typeof(char),
+                                   typeof(Guid),
+                                   typeof(DateTime),
+                                   typeof(DateTimeOffset),
+                                   typeof(byte[])
+                               };
+            return simpleTypes.Contains(type) || type.IsEnum;
+        }
     }
 }

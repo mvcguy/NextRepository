@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net46": {
+      "wrappedProject": "../../NextRepository.MemCache/NextRepository.MemCache.csproj",
+      "bin": {
+        "assembly": "../../NextRepository.MemCache/obj/{configuration}/NextRepository.MemCache.dll",
+        "pdb": "../../NextRepository.MemCache/obj/{configuration}/NextRepository.MemCache.pdb"
+      }
+    }
+  }
+}

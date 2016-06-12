@@ -12,9 +12,9 @@ namespace Repository.MsSql
             SqlDbContext = sqlDbContext;
         }
 
-        public MsSqlRepository(string connectionString, int commandTimeout = 30)
+        public MsSqlRepository(string connectionString, int commandTimeout = 30, bool useCache = false)
         {
-            SqlDbContext = new MsSqlDbContext(connectionString, commandTimeout);
+            SqlDbContext = new MsSqlDbContext(connectionString, commandTimeout, useCache);
         }
 
         public IEnumerable<TEntity> Query<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramValueCollection = null) where TEntity : new()

@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading;
 using NextRepository.Common;
+using NextRepository.MemCache;
 
 namespace Repository.MsSql
 {
@@ -12,45 +13,89 @@ namespace Repository.MsSql
     {
         private readonly string _connectionString;
         private readonly int _commandTimeout;
+        private readonly bool _useCache;
 
-        public MsSqlDbContext(string connectionString, int commandTimeout = 30)
+        public MsSqlDbContext(string connectionString, int commandTimeout = 30, bool useCache = false)
         {
             _connectionString = connectionString;
             _commandTimeout = commandTimeout;
+            _useCache = useCache;
         }
 
         public virtual IEnumerable<TEntity> ExecuteQuery<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramCollection = null) where TEntity : new()
         {
-            using (var connection = InitializeConnection())
+            Func<DataSchema> func = () =>
             {
-                using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
+                var dataSchema = new DataSchema();
+                DataTable schema;
+                var data = new List<TEntity>();
+
+                using (var connection = InitializeConnection())
                 {
-                    using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
+                    using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
                     {
-                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
-                        var mapper = new DataReaderMapper<TEntity>(columns,reader.GetSchemaTable());
-                        while (reader.Read())
-                            yield return mapper.MapFrom(reader);
+                        using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
+                        {
+                            schema = reader.GetSchemaTable();
+                            var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                            var mapper = new DataReaderMapper<TEntity>(columns, schema);
+                            while (reader.Read())
+                                data.Add(mapper.MapFrom(reader));
+                        }
                     }
                 }
+
+                dataSchema.SchemaTable = schema;
+                dataSchema.Data = data;
+
+                return dataSchema;
+            };
+
+            if (_useCache && commandType == CommandType.Text)
+            {
+                return QueryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<TEntity>;
             }
+
+            return func.Invoke().Data as IEnumerable<TEntity>;
         }
 
-        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType, object paramCollection = null, params Type[] types)
+        public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType = CommandType.Text, object paramCollection = null, params Type[] types)
         {
-            using (var connection = InitializeConnection())
+
+            Func<DataSchema> func = () =>
             {
-                using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
+                var dataSchema = new DataSchema();
+                DataTable schema;
+                var data = new List<object>();
+
+                using (var connection = InitializeConnection())
                 {
-                    using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
+                    using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
                     {
-                        var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
-                        var mapper = new DataReaderMapper<object>(columns, reader.GetSchemaTable(), types);
-                        while (reader.Read())
-                            yield return mapper.MapFromMultpleTables(reader);
+                        using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
+                        {
+                            schema = reader.GetSchemaTable();
+                            var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
+                            var mapper = new DataReaderMapper<object>(columns, schema, types);
+                            while (reader.Read())
+                                data.Add(mapper.MapFromMultpleTables(reader));
+                        }
                     }
                 }
+
+                dataSchema.SchemaTable = schema;
+                dataSchema.Data = data;
+
+                return dataSchema;
+            };
+
+            if (_useCache && commandType == CommandType.Text)
+            {
+                return QueryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<object>;
             }
+
+            return func.Invoke().Data as IEnumerable<object>;
+
         }
 
         public virtual SqlConnection InitializeConnection()
@@ -79,7 +124,14 @@ namespace Repository.MsSql
                 {
                     using (var cmd = GetSqlCommand(sql, paramCollection, commandType, connection))
                     {
-                        return cmd.ExecuteNonQuery();
+                        var affectedRows = cmd.ExecuteNonQuery();
+
+                        if (commandType == CommandType.Text)
+                        {
+                            QueryCache.InvalidateCache(sql, _connectionString);
+                        }
+
+                        return affectedRows;
                     }
                 }
 
@@ -111,6 +163,12 @@ namespace Repository.MsSql
                             }
 
                             trans.Commit();
+
+                            if (commandType == CommandType.Text)
+                            {
+                                QueryCache.InvalidateCache(sql, _connectionString);
+                            }
+
                             return affectedRows;
                         }
                         catch (Exception)

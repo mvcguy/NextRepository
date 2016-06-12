@@ -54,6 +54,10 @@
       <Project>{f8082f72-8043-4fd4-84c2-e425b464e867}</Project>
       <Name>NextRepository.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NextRepository.MemCache\NextRepository.MemCache.csproj">
+      <Project>{5F13BA4E-52C8-460F-9634-18137FADEAE6}</Project>
+      <Name>NextRepository.MemCache</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

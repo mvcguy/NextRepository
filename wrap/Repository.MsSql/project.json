@@ -8,7 +8,8 @@
         "pdb": "../../Repository.MsSql/obj/{configuration}/Repository.MsSql.pdb"
       },
       "dependencies": {
-        "NextRepository.Common": "1.0.0-*"
+        "NextRepository.Common": "1.0.0-*",
+        "NextRepository.MemCache": "1.0.0-*"
       }
     }
   }
