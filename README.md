@@ -12,10 +12,10 @@ The Non-Query & BulkInsert provides support to have pre and post operations with
 
 # Cache Support
 
-Cache support is added to MS Sql Repository. 
+Cache support is added to MS Sql & MySql Repositories. 
 
-It means if the usedCache flag is set in the repository, then all the select queries will be cached. 
-The caches will be dropped/invalidated as soon as the repository sees an insert/update/delete operation against a similar table for which caches has been generated.
+It means if the useCache flag is set in the repository, then all the select queries will be cached. 
+The caches will be dropped/invalidated as soon as the repository detects an insert/update/delete operation against a similar table for which caches has been generated.
 
 The cache support is demonstrated using Unit Tests, and also through the web sample that is provided along with the solution.
 
