@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "exports": {
+    "NextRepository.Common/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6",
+      "compile": {
+        "bin/Debug/NextRepository.Common.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/NextRepository.Common.dll": {}
+      }
+    },
+    "Repository.MsSql/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6",
+      "compile": {
+        "bin/Debug/Repository.MsSql.dll": {}
+      },
+      "runtime": {
+        "bin/Debug/Repository.MsSql.dll": {}
+      }
+    },
+    "Repository.MySql/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6",
+      "compile": {
+        "bin/Debug/Repository.MySql.dll": {}
+      },
+      "runtime": {
+        "../packages/MySql.Data.6.9.8/lib/net45/MySql.Data.dll": {},
+        "bin/Debug/Repository.MySql.dll": {}
+      }
+    }
+  }
+}
