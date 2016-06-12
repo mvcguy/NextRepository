@@ -13,9 +13,9 @@ namespace Repository.MySql
             SqlDbContext = sqlDbContext;
         }
 
-        public MySqlRepository(string connectionString, int commandTimeout = 30)
+        public MySqlRepository(string connectionString, int commandTimeout = 30, bool useCache = false)
         {
-            SqlDbContext = new MySqlDbContext(connectionString, commandTimeout);
+            SqlDbContext = new MySqlDbContext(connectionString, commandTimeout,useCache);
         }
 
         public IEnumerable<TEntity> Query<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramValueCollection = null) where TEntity : new()

@@ -1,7 +1,7 @@
 ﻿@model NextRepository.WebSample.Models.Product
 
 @{
-    ViewData["Title"] = "MS Sql - Create Product";
+    ViewData["Title"] = "MySql - Create Product";
 }
 <h2>@ViewData["Title"]</h2>
 <hr/>
@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-md-8">
         <section>
-            <form asp-controller="Home" asp-action="CreateProduct" method="post" class="form-horizontal">
+            <form asp-controller="Home" asp-action="CreateProductMySql" method="post" class="form-horizontal">
 
                 <div class="text-danger">
                     @Html.ValidationSummary(false)

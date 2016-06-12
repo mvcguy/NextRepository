@@ -62,9 +62,9 @@ namespace NextRepository.WebSample.Controllers
             return View(new Product());
         }
 
+        [HttpPost]
         public IActionResult CreateProduct(Product product)
         {
-
             try
             {
                 if (ModelState.IsValid)
@@ -89,6 +89,67 @@ namespace NextRepository.WebSample.Controllers
             }
 
             return View(product);
+        }
+
+        [HttpGet]
+        public IActionResult CreateProductMySql()
+        {
+            return View(new Product());
+        }
+
+        [HttpPost]
+        public IActionResult CreateProductMySql(Product product)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var query = _appQueriesService.MySqlQueries[DatabaseConstants.InsertProduct] as string;
+
+                    var aRows = _mySqlRepository.NonQuery(query, paramCollection: product);
+                    if (aRows > 0)
+                    {
+                        return RedirectToAction("MySql", "Home");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "No record is saved. Try again later.");
+                    }
+
+                }
+            }
+            catch (Exception excep)
+            {
+                ModelState.AddModelError("", excep.Message);
+            }
+
+            return View(product);
+        }
+
+        public IActionResult Search(string query = null)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return RedirectToAction("Index", "Home");
+
+            query = string.Format("%{0}%", query);
+
+            var sql = "SELECT * FROM NextDatalayerWeb.dbo.Products WHERE Name like @query OR Description like @query";
+            var records = _msSqlRepository.Query<Product>(sql, paramValueCollection: new { query });
+            
+            return View("Search", records);
+        }
+
+        public IActionResult SearchMySql(string query = null)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return RedirectToAction("MySql", "Home");
+
+            query = string.Format("%{0}%", query);
+
+            var sql = "SELECT * FROM NextDatalayerWeb.Products WHERE Name like @query OR Description like @query";
+            var records = _mySqlRepository.Query<Product>(sql, paramValueCollection: new { query });
+
+            return View("SearchMySql", records);
         }
 
         public IActionResult Contact()

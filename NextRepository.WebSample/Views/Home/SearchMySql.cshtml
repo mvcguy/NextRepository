@@ -1,0 +1,29 @@
+﻿
+@model List<NextRepository.WebSample.Models.Product>
+
+@{
+    ViewData["Title"] = "MySql Search Results";
+}
+<h2>@ViewData["Title"].</h2>
+<h3>@ViewData["RepoType"]</h3>
+
+<table class="table table-hover table-responsive">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr>
+                <td>@product.Id</td>
+                <td>@product.Name</td>
+                <td>@product.Description</td>
+            </tr>
+        }
+
+    </tbody>
+</table>

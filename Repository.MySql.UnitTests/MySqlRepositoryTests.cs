@@ -18,7 +18,7 @@ namespace Repository.MySql.UnitTests
         [AssemblyInitialize]
         public static void OnTestClassInit(TestContext context)
         {
-            _repository = new MySqlRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            _repository = new MySqlRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString, useCache: true);
             InitializeDatabase();
         }
 

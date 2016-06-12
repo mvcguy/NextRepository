@@ -62,7 +62,7 @@ namespace NextRepository.WebSample
             services.AddSingleton<IMySqlRepository>(provider =>
             {
                 var connectionString = Configuration["Data:MySqlDefault:ConnectionString"];
-                return new MySqlRepository(connectionString);
+                return new MySqlRepository(connectionString, useCache: true);
 
             });
 
