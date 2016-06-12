@@ -1,5 +1,6 @@
 ﻿{
   "GetProducts": "SELECT * FROM NextDatalayerWeb.dbo.Products",
   "GetProductsLog": "SELECT * FROM NextDatalayerWeb.dbo.ProductsLog",
-  "ProductsAndLog": "SELECT * FROM NextDatalayerWeb.dbo.Products CROS JOIN NextDatalayerWeb.dbo.ProductsLog"
+  "ProductsAndLog": "SELECT * FROM NextDatalayerWeb.dbo.Products CROS JOIN NextDatalayerWeb.dbo.ProductsLog",
+  "InsertProduct": "INSERT INTO NextDatalayerWeb.dbo.Products (Name, Description) values (@Name, @Description)"
 }

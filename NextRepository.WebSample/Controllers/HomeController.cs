@@ -69,7 +69,8 @@ namespace NextRepository.WebSample.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    var query = "INSERT INTO NextDatalayerWeb.dbo.Products (Name, Description) values (@Name, @Description)";
+                    var query = _appQueriesService.MsSqlQueries[DatabaseConstants.InsertProduct] as string;
+
                     var aRows = _msSqlRepository.NonQuery(query, paramCollection: product);
                     if (aRows > 0)
                     {

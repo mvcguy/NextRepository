@@ -12,5 +12,7 @@ namespace NextRepository.WebSample.AppConstants
         public const string GetProductsLog = "GetProductsLog";
 
         public const string ProductsAndLog = "ProductsAndLog";
+
+        public const string InsertProduct = "InsertProduct";
     }
 }
