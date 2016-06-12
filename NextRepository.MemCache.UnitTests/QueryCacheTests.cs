@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NextRepository.Common;
@@ -113,8 +114,7 @@ namespace NextRepository.MemCache.UnitTests
                 {
                     const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
                     var param = new { Name = "%galaxy%" };
-
-
+                    
                     Func<DataSchema> databaseOperation = () =>
                     {
                         var dataSchema = new DataSchema
@@ -129,6 +129,7 @@ namespace NextRepository.MemCache.UnitTests
                     Assert.IsNotNull(data);
                     Assert.IsTrue(data.Any());
                 });
+                
                 task.Start();
                 tasks.Add(task);
             }

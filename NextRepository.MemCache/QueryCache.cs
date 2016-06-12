@@ -18,51 +18,65 @@ namespace NextRepository.MemCache
 
         private static readonly ConcurrentDictionary<int, List<string>> QueryTables = new ConcurrentDictionary<int, List<string>>();
 
+        private static readonly object Sync = new object();
+
+        private static readonly object Sync2 = new object();
+
+        private static readonly object Sync3 = new object();
+
+
         public object QueryStore(Func<DataSchema> action, string sql, string connection, object paramCollection = null)
         {
-            var normSql = NormalizedQuery(sql, paramCollection);
-
-            var key = GetHash(normSql, connection);
-            object data;
-
-            if (Store.ContainsKey(key))
+            lock (Sync)
             {
-                data = Store[key];
-            }
-            else
-            {
-                var dataSchema = action.Invoke();
-                Store[key] = dataSchema.Data;
-                data = dataSchema.Data;
-                if (!StoreKeys.ContainsKey(key))
+                var normSql = NormalizedQuery(sql, paramCollection);
+
+                var key = GetHash(normSql, connection);
+                object data;
+
+                if (Store.ContainsKey(key))
                 {
-                    StoreKeys[key] = new[] { normSql, connection };
+                    data = Store[key];
+                }
+                else
+                {
+                    var dataSchema = action.Invoke();
+                    Store[key] = dataSchema.Data;
+                    data = dataSchema.Data;
+                    if (!StoreKeys.ContainsKey(key))
+                    {
+                        StoreKeys[key] = new[] { normSql, connection };
+                    }
+
+                    if (!QueryTables.ContainsKey(key))
+                    {
+                        QueryTables[key] = GetTableNames(dataSchema.SchemaTable).Select(x => string.Format("{0}_{1}", x, connection)).ToList();
+                    }
                 }
 
-                if (!QueryTables.ContainsKey(key))
-                {
-                    QueryTables[key] = GetTableNames(dataSchema.SchemaTable).Select(x => string.Format("{0}_{1}", x, connection)).ToList();
-                }
+                return data;
             }
 
-            return data;
         }
 
         public void InvalidateCache(string sql, string connection)
         {
-            var matchedEntries = GetMatchedEntries(sql, connection);
-            foreach (var matchedEntry in matchedEntries)
+            lock (Sync2)
             {
-                if (Store.ContainsKey(matchedEntry))
+                var matchedEntries = GetMatchedEntries(sql, connection);
+                foreach (var matchedEntry in matchedEntries)
                 {
-                    object data;
-                    Store.TryRemove(matchedEntry, out data);
+                    if (Store.ContainsKey(matchedEntry))
+                    {
+                        object data;
+                        Store.TryRemove(matchedEntry, out data);
+                    }
                 }
             }
 
         }
 
-        private static int GetHash(params string[] keys)
+        private int GetHash(params string[] keys)
         {
             var keyStr = string.Empty;
 
@@ -74,7 +88,7 @@ namespace NextRepository.MemCache
             return keyStr.GetHashCode();
         }
 
-        private static string NormalizedQuery(string sql, object paramCollection = null)
+        private string NormalizedQuery(string sql, object paramCollection = null)
         {
 
             if (paramCollection == null || paramCollection.GetType().IsSimpleType())
@@ -82,7 +96,7 @@ namespace NextRepository.MemCache
 
 
             var normSql = sql.ToLower();
-            
+
             var sqlParams = new List<SqlParameter>();
 
             if (paramCollection.GetType() == typeof(Dictionary<string, object>) || paramCollection.GetType() == typeof(IDictionary<string, object>))
@@ -120,11 +134,11 @@ namespace NextRepository.MemCache
                     normSql = normSql.Replace(paramName, sqlParameter.Value.GetHashCode().ToString());
                 }
             }
-            
+
             return normSql;
         }
 
-        private static IEnumerable<int> GetMatchedEntries(string query, string connection)
+        private IEnumerable<int> GetMatchedEntries(string query, string connection)
         {
             var normQuery = query.Trim();
             var dml = normQuery.StartsWith("insert into", StringComparison.OrdinalIgnoreCase)
@@ -147,7 +161,7 @@ namespace NextRepository.MemCache
             return matchedEntries;
         }
 
-        public static List<string> GetTableNames(DataTable schemaTable)
+        private List<string> GetTableNames(DataTable schemaTable)
         {
             var tables = new List<string>();
 
@@ -172,9 +186,13 @@ namespace NextRepository.MemCache
 
         public void CleanCache()
         {
-            Store.Clear();
-            StoreKeys.Clear();
-            QueryTables.Clear();
+            lock (Sync3)
+            {
+                Store.Clear();
+                StoreKeys.Clear();
+                QueryTables.Clear();
+            }
+
         }
     }
 
