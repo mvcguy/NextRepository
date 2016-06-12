@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NextRepository.Common;
 using Repository.MsSql;
@@ -20,8 +21,9 @@ namespace NextRepository.MemCache.UnitTests
         {
             const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
             var param = new { Name = "%galaxy%" };
+            var cache = new QueryCache();
 
-            QueryCache.CleanCache();
+            cache.CleanCache();
             var databaseHits = 0;
 
             Func<DataSchema> databaseOperation = () =>
@@ -36,14 +38,14 @@ namespace NextRepository.MemCache.UnitTests
             };
 
             //first time call should increment the databaseHits to 1
-            var data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            var data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 1);
 
             //subsequent calls should fetch the data from the cache only!
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
@@ -57,8 +59,9 @@ namespace NextRepository.MemCache.UnitTests
         {
             const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
             var param = new { Name = "%galaxy%" };
+            var cache = new QueryCache();
 
-            QueryCache.CleanCache();
+            cache.CleanCache();
             var databaseHits = 0;
 
             Func<DataSchema> databaseOperation = () =>
@@ -73,12 +76,12 @@ namespace NextRepository.MemCache.UnitTests
             };
 
 
-            var data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            var data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 1);
 
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, new { Name = "%sony%" }) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, new { Name = "%sony%" }) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
@@ -86,12 +89,12 @@ namespace NextRepository.MemCache.UnitTests
 
 
             //subsequent calls should not invoke the db operation, rather the data is served from cache
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 2);
 
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, new { Name = "%sony%" }) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, new { Name = "%sony%" }) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
@@ -100,12 +103,48 @@ namespace NextRepository.MemCache.UnitTests
         }
 
         [TestMethod]
+        public void QueryStore_Should_Allow_Concurrent_Tasks()
+        {
+            var tasks = new List<Task>();
+            var cache=new QueryCache();
+            for (var i = 0; i < 500; i++)
+            {
+                var task = new Task(() =>
+                {
+                    const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
+                    var param = new { Name = "%galaxy%" };
+
+
+                    Func<DataSchema> databaseOperation = () =>
+                    {
+                        var dataSchema = new DataSchema
+                        {
+                            SchemaTable = GetFakeTable("products"),
+                            Data = GetFakeObjects()
+                        };
+                        return dataSchema;
+                    };
+
+                    var data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+                    Assert.IsNotNull(data);
+                    Assert.IsTrue(data.Any());
+                });
+                task.Start();
+                tasks.Add(task);
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+        }
+
+        [TestMethod]
         public void InvalidateCache_Should_Invalidate_Cache_When_DML_Query_Is_Executed()
         {
             const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
             var param = new { Name = "%galaxy%" };
+            var cache = new QueryCache();
 
-            QueryCache.CleanCache();
+            cache.CleanCache();
             var databaseHits = 0;
 
             Func<DataSchema> databaseOperation = () =>
@@ -120,37 +159,37 @@ namespace NextRepository.MemCache.UnitTests
             };
 
             //first time call should increment the databaseHits to 1
-            var data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            var data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 1);
 
             //lets assume we have executed a DML query against this table, next we call the following method.
             //this method would drop all caches that has table name Products included in them.
-            QueryCache.InvalidateCache("DELETE FROM PRODUCTS WHERE ID = 10", ConnectionString);
+            cache.InvalidateCache("DELETE FROM PRODUCTS WHERE ID = 10", ConnectionString);
 
             //now if we execute cache.QueryStore, the databaseHits should be incremented to 2
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 2);
 
             //execute another dml query
-            QueryCache.InvalidateCache("UPDATE PRODUCTS SET NAME='Apples' WHERE ID = 10", ConnectionString);
+            cache.InvalidateCache("UPDATE PRODUCTS SET NAME='Apples' WHERE ID = 10", ConnectionString);
 
             //now if we execute cache.QueryStore, the databaseHits should be incremented to 3
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());
             Assert.IsTrue(databaseHits == 3);
 
             //execute another dml query
-            QueryCache.InvalidateCache("INSERT INTO Products ([Name],[Description]) values ('Galaxy S6', '3GB RAM 32 Internal Storage')", ConnectionString);
+            cache.InvalidateCache("INSERT INTO Products ([Name],[Description]) values ('Galaxy S6', '3GB RAM 32 Internal Storage')", ConnectionString);
 
             //now if we execute cache.QueryStore, the databaseHits should be incremented to 4
-            data = QueryCache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString, param) as IEnumerable<object>;
 
             Assert.IsNotNull(data);
             Assert.IsTrue(data.Any());

@@ -16,12 +16,14 @@ namespace Repository.MySql
         private readonly string _connectionString;
         private readonly int _commandTimeout;
         private readonly bool _useCache;
+        private readonly QueryCache _queryCache;
 
         public MySqlDbContext(string connectionString, int commandTimeout = 30, bool useCache = false)
         {
             _connectionString = connectionString;
             _commandTimeout = commandTimeout;
             _useCache = useCache;
+            _queryCache=new QueryCache();
         }
 
         public virtual IEnumerable<TEntity> ExecuteQuery<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramCollection = null) where TEntity : new()
@@ -57,7 +59,7 @@ namespace Repository.MySql
 
             if (_useCache && commandType == CommandType.Text)
             {
-                return QueryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<TEntity>;
+                return _queryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<TEntity>;
             }
 
             return func.Invoke().Data as IEnumerable<TEntity>;
@@ -95,7 +97,7 @@ namespace Repository.MySql
 
             if (_useCache && commandType == CommandType.Text)
             {
-                return QueryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<object>;
+                return _queryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<object>;
             }
 
             return func.Invoke().Data as IEnumerable<object>;
@@ -131,7 +133,7 @@ namespace Repository.MySql
 
                         if (commandType == CommandType.Text)
                         {
-                            QueryCache.InvalidateCache(sql, _connectionString);
+                            _queryCache.InvalidateCache(sql, _connectionString);
                         }
 
                         return affectedRows;
@@ -168,7 +170,7 @@ namespace Repository.MySql
                             trans.Commit();
                             if (commandType == CommandType.Text)
                             {
-                                QueryCache.InvalidateCache(sql, _connectionString);
+                                _queryCache.InvalidateCache(sql, _connectionString);
                             }
                             return affectedRows;
                         }

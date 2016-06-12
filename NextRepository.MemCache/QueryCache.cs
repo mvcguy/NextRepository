@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace NextRepository.MemCache
 {
-    public static class QueryCache
+    public class QueryCache
     {
         private static readonly ConcurrentDictionary<int, object> Store = new ConcurrentDictionary<int, object>();
 
@@ -18,7 +18,7 @@ namespace NextRepository.MemCache
 
         private static readonly ConcurrentDictionary<int, List<string>> QueryTables = new ConcurrentDictionary<int, List<string>>();
 
-        public static object QueryStore(Func<DataSchema> action, string sql, string connection, object paramCollection = null)
+        public object QueryStore(Func<DataSchema> action, string sql, string connection, object paramCollection = null)
         {
             var normSql = NormalizedQuery(sql, paramCollection);
 
@@ -48,7 +48,7 @@ namespace NextRepository.MemCache
             return data;
         }
 
-        public static void InvalidateCache(string sql, string connection)
+        public void InvalidateCache(string sql, string connection)
         {
             var matchedEntries = GetMatchedEntries(sql, connection);
             foreach (var matchedEntry in matchedEntries)
@@ -170,7 +170,7 @@ namespace NextRepository.MemCache
             return tables;
         }
 
-        public static void CleanCache()
+        public void CleanCache()
         {
             Store.Clear();
             StoreKeys.Clear();
