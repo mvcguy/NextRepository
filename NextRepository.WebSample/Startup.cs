@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNet.Builder;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,6 +16,16 @@ namespace NextRepository.WebSample
 {
     public class Startup
     {
+
+        private bool _mySqlInitError;
+        private bool _msSqlInitError;
+
+        private bool _mySqlInit;
+        private bool _msSqlInit;
+
+        private bool _appQueriesInit;
+        private bool _appQueriesInitError;
+
         public Startup(IHostingEnvironment env)
         {
             // Set up configuration sources.
@@ -56,13 +69,13 @@ namespace NextRepository.WebSample
             services.AddSingleton(typeof(IMsSqlRepository), provider =>
             {
                 var connectionString = Configuration["Data:MsSqlDefault:ConnectionString"];
-                return new MsSqlRepository(connectionString);
+                return new MsSqlRepository(connectionString, useCache: true);
             });
 
             services.AddSingleton<ResoucesService>();
             services.AddSingleton<SeedDatabaseService>();
             services.AddSingleton<AppQueriesService>();
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -91,33 +104,75 @@ namespace NextRepository.WebSample
             app.UseStaticFiles();
 
             //if this is the right way to initialize stuff?
-            app.Use(async (ctx, next) =>
-            {
-                var provider = ctx.ApplicationServices;
-                var seedService = provider.GetService<SeedDatabaseService>();
-
-                seedService.DropCreateDatabaseMySql();
-                seedService.DropCreateDatabaseMsSql();
-
-                await next();
-            });
+            app.Use(SeedDatabase());
 
             //if this is the right way to initialize stuff?
-            app.Use(async (ctx, next) =>
-            {
-                var provider = ctx.ApplicationServices;
-                var appQueriesService = provider.GetService<AppQueriesService>();
-                appQueriesService.Init();
+            app.Use(InitQueries());
 
-                await next();
-            });
-            
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private Func<HttpContext, Func<Task>, Task> InitQueries()
+        {
+            return async (ctx, next) =>
+            {
+
+                var provider = ctx.ApplicationServices;
+                var appQueriesService = provider.GetService<AppQueriesService>();
+
+                try
+                {
+                    if (!_appQueriesInitError && !_appQueriesInit)
+                        appQueriesService.Init();
+
+                    _appQueriesInit = true;
+                }
+                catch (Exception)
+                {
+                    _appQueriesInitError = true;
+                }
+
+                await next();
+            };
+        }
+
+        private Func<HttpContext, Func<Task>, Task> SeedDatabase()
+        {
+            return async (ctx, next) =>
+            {
+                var provider = ctx.ApplicationServices;
+                var seedService = provider.GetService<SeedDatabaseService>();
+
+                try
+                {
+                    if (!_mySqlInitError && !_mySqlInit)
+                        seedService.DropCreateDatabaseMySql();
+                    _mySqlInit = true;
+                }
+                catch (Exception)
+                {
+                    _mySqlInitError = true;
+                }
+
+                try
+                {
+                    if (!_msSqlInitError && !_msSqlInit)
+                        seedService.DropCreateDatabaseMsSql();
+                    _msSqlInit = true;
+
+                }
+                catch (Exception)
+                {
+                    _msSqlInitError = true;
+                }
+
+                await next();
+            };
         }
 
         // Entry point for the application.
