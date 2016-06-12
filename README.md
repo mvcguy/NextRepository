@@ -9,3 +9,14 @@ A test project is provided to demonstrate the usage of the repository. The repos
 The query, non-query and bulk insert methods uses separate SqlCommands, connection & transaction that would avoid throwing exceptions like 'There is already an open DataReader associated with this Command...'
 
 The Non-Query & BulkInsert provides support to have pre and post operations with in same transaction. The unit tests demonstrates this as well.
+
+# Cache Support
+
+Cache support is added to MS Sql Repository. 
+
+It means if the usedCache flag is set in the repository, then all the select queries will be cached. 
+The caches will be dropped/invalidated as soon as the repository sees an insert/update/delete operation against a similar table for which caches has been generated.
+
+The cache support is demonstrated using Unit Tests, and also through the web sample that is provided along with the solution.
+
+Your feedback is highly appreciated. Please write to me @@ me.shahidali@hotmail.com
