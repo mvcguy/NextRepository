@@ -116,6 +116,13 @@ namespace NextRepository.MemCache
 
             return tables;
         }
+
+        public void CleanCache()
+        {
+            Store.Clear();
+            StoreKeys.Clear();
+            QueryTables.Clear();
+        }
     }
 
     public class DataSchema

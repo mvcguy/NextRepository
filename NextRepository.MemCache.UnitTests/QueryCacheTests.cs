@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Dynamic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NextRepository.Common;
@@ -12,58 +13,124 @@ namespace NextRepository.MemCache.UnitTests
     [TestClass]
     public class QueryCacheTests
     {
-
-        private QueryCache _cache=new QueryCache();
-        private readonly string _connectionString = ConfigurationManager.ConnectionStrings["Default"].ConnectionString;
+        private static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["Default"].ConnectionString;
 
         [TestMethod]
-        public void TestMethod1()
+        public void QueryStore_Should_Cache_QueryResult()
         {
-            const string sql = "SELECT * FROM NextDataLayer.dbo.PRODUCTS";
+            const string sql = "SELECT top 10 * FROM PRODUCTS";
+            var cache = new QueryCache();
+            cache.CleanCache();
+            var databaseHits = 0;
 
-            var data = Query(sql);
-            //var data2 = Query(sql);
-
-            _cache.InvalidateCache("     UPDATE      db.dbo.PRODUCTS SET NAME='SOMETHING'", _connectionString);
-
-            //var data3 = Query(sql);
-
-        }
-
-        private IEnumerable<object> Query(string sql, CommandType commandType = CommandType.Text, object paramCollection = null)
-        {
-            Func<DataSchema> func = () =>
+            Func<DataSchema> databaseOperation = () =>
             {
-                var dataSchema = new DataSchema();
-                DataTable schemaTable;
-
-                var dbContext = new MsSqlDbContext(_connectionString);
-                var items=new List<object>();
-
-                using (var connection = dbContext.InitializeConnection())
+                var dataSchema = new DataSchema
                 {
-                    using (var command = dbContext.GetSqlCommand(sql, paramCollection, commandType, connection))
-                    {
-                        using (var reader = command.ExecuteReader(CommandBehavior.KeyInfo))
-                        {
-                            schemaTable = reader.GetSchemaTable();
-
-                            var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
-                            var mapper = new DataReaderMapper<object>(columns, schemaTable);
-                            while (reader.Read())
-                                items.Add(mapper.MapFrom(reader));
-                        }
-                    }
-                }
-
-                dataSchema.SchemaTable = schemaTable;
-                dataSchema.Data = items;
-
+                    SchemaTable = GetFakeTable("products"),
+                    Data = GetFakeObjects()
+                };
+                databaseHits++;
                 return dataSchema;
             };
 
-            return _cache.QueryStore(func,sql,_connectionString) as IEnumerable<object>;
-        } 
+            //first time call should increment the databaseHits to 1
+            var data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+            Assert.IsTrue(databaseHits == 1);
 
+            //subsequent calls should fetch the data from the cache only!
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+
+            //this proves that the func 'databaseOperation' is called only once
+            Assert.IsTrue(databaseHits == 1);
+        }
+
+        [TestMethod]
+        public void InvalidateCache_Should_Invalidate_Cache_When_DML_Query_Is_Executed()
+        {
+            const string sql = "SELECT top 10 * FROM PRODUCTS";
+            var cache = new QueryCache();
+            cache.CleanCache();
+            var databaseHits = 0;
+
+            Func<DataSchema> databaseOperation = () =>
+            {
+                var dataSchema = new DataSchema
+                {
+                    SchemaTable = GetFakeTable("products"),
+                    Data = GetFakeObjects()
+                };
+                databaseHits++;
+                return dataSchema;
+            };
+
+            //first time call should increment the databaseHits to 1
+            var data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+            Assert.IsTrue(databaseHits == 1);
+
+            //lets assume we have executed a DML query against this table, next we call the following method.
+            //this method would drop all caches that has table name Products included in them.
+            cache.InvalidateCache("DELETE FROM PRODUCTS WHERE ID = 10", ConnectionString);
+
+            //now if we execute cache.QueryStore, the databaseHits should be incremented to 2
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+            Assert.IsTrue(databaseHits == 2);
+
+            //execute another dml query
+            cache.InvalidateCache("UPDATE PRODUCTS SET NAME='Apples' WHERE ID = 10", ConnectionString);
+
+            //now if we execute cache.QueryStore, the databaseHits should be incremented to 3
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+            Assert.IsTrue(databaseHits == 3);
+
+            //execute another dml query
+            cache.InvalidateCache("INSERT INTO Products ([Name],[Description]) values ('Galaxy S6', '3GB RAM 32 Internal Storage')", ConnectionString);
+
+            //now if we execute cache.QueryStore, the databaseHits should be incremented to 4
+            data = cache.QueryStore(databaseOperation, sql, ConnectionString) as IEnumerable<object>;
+
+            Assert.IsNotNull(data);
+            Assert.IsTrue(data.Any());
+            Assert.IsTrue(databaseHits == 4);
+
+        }
+
+        private DataTable GetFakeTable(string tableName)
+        {
+            var table = new DataTable(tableName);
+            table.Columns.Add("BaseTableName");
+            var row = table.NewRow();
+            row["BaseTableName"] = tableName;
+            table.Rows.Add(row);
+            return table;
+        }
+
+        private IEnumerable<object> GetFakeObjects()
+        {
+            var list = new List<dynamic>();
+
+            for (int i = 0; i < 20; i++)
+            {
+                var item = new ExpandoObject() as IDictionary<string, object>;
+                item.Add(string.Format("item{0}", i), i);
+                list.Add(item);
+            }
+
+            return list;
+        }
     }
 }
