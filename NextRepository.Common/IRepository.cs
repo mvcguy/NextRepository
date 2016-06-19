@@ -15,5 +15,7 @@ namespace NextRepository.Common
 
         IEnumerable<object> ExecuteMultiQuery(string sql, TCommandType commandType, object paramCollection = null, params Type[] types);
 
+        object ExecuteScaler(string sql, TCommandType commandType, object paramCollection = null);
+
     }
 }

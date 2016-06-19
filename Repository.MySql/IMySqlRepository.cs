@@ -19,5 +19,7 @@ namespace Repository.MySql
             Func<MySqlConnection, MySqlTransaction, bool> preQueryOperation = null, Func<MySqlConnection, MySqlTransaction, bool> postQueryOperation = null);
         
         new IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType = CommandType.Text, object paramCollection = null, params Type[] types);
+
+        new object ExecuteScaler(string sql, CommandType commandType=CommandType.Text, object paramCollection = null);
     }
 }

@@ -141,6 +141,16 @@ namespace Repository.MySql.UnitTests
             Assert.IsTrue(result.Any());
         }
 
+        [TestMethod]
+        public void Excecute_Scalar()
+        {
+            const string sql = "SELECT Count(1) as TotalRecords from nextdatalayer.products cross join nextdatalayer.productslog";
+
+            var result = _repository.ExecuteScaler(sql);
+
+            Assert.IsTrue((long)result > 0);
+        }
+
         #region helpers
 
         private static void InitializeDatabase()

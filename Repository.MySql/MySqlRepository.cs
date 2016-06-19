@@ -15,7 +15,7 @@ namespace Repository.MySql
 
         public MySqlRepository(string connectionString, int commandTimeout = 30, bool useCache = false)
         {
-            SqlDbContext = new MySqlDbContext(connectionString, commandTimeout,useCache);
+            SqlDbContext = new MySqlDbContext(connectionString, commandTimeout, useCache);
         }
 
         public IEnumerable<TEntity> Query<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramValueCollection = null) where TEntity : new()
@@ -49,6 +49,11 @@ namespace Repository.MySql
             Func<MySqlConnection, MySqlTransaction, bool> preQueryOperation = null, Func<MySqlConnection, MySqlTransaction, bool> postQueryOperation = null)
         {
             SqlDbContext.BulkInsert(tableName, records, sqlBulkCopyOptions, batchSize, timeOut, preQueryOperation, postQueryOperation);
+        }
+
+        public object ExecuteScaler(string sql, CommandType commandType = CommandType.Text, object paramCollection = null)
+        {
+            return SqlDbContext.ExecuteScaler(sql, commandType, paramCollection);
         }
 
         public IMySqlDbContext SqlDbContext { get; }

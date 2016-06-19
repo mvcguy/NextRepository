@@ -20,5 +20,6 @@ namespace Repository.MsSql
 
         new IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType=CommandType.Text, object paramCollection = null, params Type[] types);
 
+        new object ExecuteScaler(string sql, CommandType commandType = CommandType.Text, object paramCollection = null);
     }
 }

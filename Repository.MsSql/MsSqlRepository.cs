@@ -50,6 +50,11 @@ namespace Repository.MsSql
             SqlDbContext.BulkInsert(tableName, records, sqlBulkCopyOptions, batchSize, timeOut, preQueryOperation, postQueryOperation);
         }
 
+        public object ExecuteScaler(string sql, CommandType commandType = CommandType.Text, object paramCollection = null)
+        {
+            return SqlDbContext.ExecuteScaler(sql, commandType, paramCollection);
+        }
+
         public IMsSqlDbContext SqlDbContext { get; }
     }
 }

@@ -141,6 +141,15 @@ namespace Repository.MsSql.UnitTests
             Assert.IsTrue(result.Any());
         }
 
+        [TestMethod]
+        public void Excecute_Scalar()
+        {
+            const string sql = "SELECT Count(1) as TotalRecords from nextdatalayer.dbo.products cross join nextdatalayer.dbo.productslog";
+
+            var result = _repository.ExecuteScaler(sql);
+
+            Assert.IsTrue((int)result>0);
+        }
 
         #region helpers
 

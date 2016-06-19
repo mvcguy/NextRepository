@@ -358,6 +358,17 @@ namespace Repository.MySql
 
             return sqlBulkLoader;
         }
+
+        public virtual object ExecuteScaler(string sql, CommandType commandType = CommandType.Text, object paramCollection = null)
+        {
+            using (var connection = InitializeConnection())
+            {
+                using (var command = GetSqlCommand(sql, paramCollection, commandType, connection))
+                {
+                    return command.ExecuteScalar();
+                }
+            }
+        }
     }
 
     public static class Rfc4180Writer

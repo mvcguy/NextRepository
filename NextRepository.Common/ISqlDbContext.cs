@@ -22,5 +22,7 @@ namespace NextRepository.Common
         TDbCommand GetSqlCommand(string sql, object paramCollection, TCommandType commandType, TDbConnection connection, TTransaction transaction);
 
         TBulkCopy GetBulkCopy(TDbConnection connection, TBulkCopyOptions bulkCopyOptions, TTransaction transaction, int batchSize, int timeOut, string tableName);
+
+        object ExecuteScaler(string sql, TCommandType commandType, object paramCollection = null);
     }
 }
