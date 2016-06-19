@@ -24,7 +24,6 @@ namespace NextRepository.MemCache
 
         private static readonly object Sync3 = new object();
 
-
         public object QueryStore(Func<DataSchema> action, string sql, string connection, object paramCollection = null)
         {
             lock (Sync)

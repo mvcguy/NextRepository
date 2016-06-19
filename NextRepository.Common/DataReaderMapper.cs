@@ -18,6 +18,8 @@ namespace NextRepository.Common
         private readonly IDictionary<string, List<PropertyInfo>> _tableAndTypeProperties;
         private readonly IDictionary<string, string> _tableAndTypeMapping;
         private readonly IDictionary<string, IList<string>> _tableAndColumns;
+        public bool AggregateQuery { get; private set; }
+        public bool MultiTableQuery { get; private set; }
 
         public DataReaderMapper(IEnumerable<string> columns, DataTable schemaTable)
         {
@@ -27,6 +29,7 @@ namespace NextRepository.Common
             _ordinalColumnMapping = new Dictionary<int, string>();
             _tableAndColumns = new Dictionary<string, IList<string>>();
             CreateOrinalColumnMapping();
+            AggregateQuery = false;
         }
 
         public DataReaderMapper(IEnumerable<string> columns, DataTable schemaTable, params Type[] types) : this(columns, schemaTable)
@@ -34,6 +37,7 @@ namespace NextRepository.Common
             _types = types;
             _tableAndTypeProperties = new Dictionary<string, List<PropertyInfo>>();
             _tableAndTypeMapping = new Dictionary<string, string>();
+            MultiTableQuery = _types.Count() > 1;
             InitilizeTableAndTypeProperties();
         }
 
@@ -44,17 +48,43 @@ namespace NextRepository.Common
 
             var zeroBasedIndex = false;
 
+            var temp1 = new Dictionary<int, string>();
+            var temp2 = new Dictionary<int, string>();
+
             foreach (DataRow myField in _schemaTable.Rows)
             {
                 var tableNameRaw = myField["BaseTableName"];
                 var ordinalRaw = myField["ColumnOrdinal"];
                 var columnNameRaw = myField["BaseColumnName"];
 
-                if (columnNameRaw is DBNull || tableNameRaw is DBNull || ordinalRaw is DBNull) continue;
+                if (ordinalRaw is DBNull) continue;
 
-                var tableName = (string)tableNameRaw;
+                if (columnNameRaw is DBNull || tableNameRaw is DBNull)
+                {
+                    AggregateQuery = true;
+                }
+
                 var ordinal = (int)ordinalRaw;
-                var columnName = (string)columnNameRaw;
+                string tableName;
+                string columnName;
+
+                if (columnNameRaw is DBNull)
+                {
+                    columnName = Guid.NewGuid().ToString().Replace("-", "");
+                }
+                else
+                {
+                    columnName = (string)columnNameRaw;
+                }
+
+                if (tableNameRaw is DBNull)
+                {
+                    tableName = Guid.NewGuid().ToString().Replace("-", "");
+                }
+                else
+                {
+                    tableName = (string)tableNameRaw;
+                }
 
                 if (string.IsNullOrWhiteSpace(tableName) || string.IsNullOrWhiteSpace(columnName) || ordinal < 0) continue;
 
@@ -77,8 +107,10 @@ namespace NextRepository.Common
                     _tableAndColumns.Add(tableName, new List<string>() { columnName });
                 }
 
-                if (_ordinalColumnMapping.ContainsKey(ordinal)) continue;
-                _ordinalColumnMapping.Add(ordinal, string.Format("{0}_X1117_{1}", tableName, columnName));
+                if (temp1.ContainsKey(ordinal) || temp2.ContainsKey(ordinal)) continue;
+
+                temp1.Add(ordinal, columnName);
+                temp2.Add(ordinal, string.Format("{0}_{1}", tableName, columnName));
 
                 //For each property of the field...
                 //foreach (DataColumn myProperty in _schemaTable.Columns)
@@ -89,6 +121,22 @@ namespace NextRepository.Common
 
                 //}
 
+            }
+            if (_tableAndColumns.Count > 1)
+            {
+                MultiTableQuery = true;
+
+                foreach (var item in temp2)
+                {
+                    _ordinalColumnMapping.Add(item);
+                }
+            }
+            else
+            {
+                foreach (var item in temp1)
+                {
+                    _ordinalColumnMapping.Add(item);
+                }
             }
         }
 
@@ -150,7 +198,7 @@ namespace NextRepository.Common
                     var newInstance = Activator.CreateInstance(type);
                     foreach (var typeProperty in typeProperties)
                     {
-                        var fieldLookup = string.Format("{0}_X1117_{1}", tableAndColumn.Key, typeProperty.Name);
+                        var fieldLookup = string.Format("{0}_{1}", tableAndColumn.Key, typeProperty.Name);
                         var fieldValue = elements[fieldLookup];
                         typeProperty.SetValue(newInstance, ChangeType(fieldValue, typeProperty.PropertyType));
                     }

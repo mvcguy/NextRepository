@@ -21,11 +21,12 @@ namespace Repository.MsSql
             _connectionString = connectionString;
             _commandTimeout = commandTimeout;
             _useCache = useCache;
-            _queryCache=new QueryCache();
+            _queryCache = new QueryCache();
         }
 
         public virtual IEnumerable<TEntity> ExecuteQuery<TEntity>(string sql, CommandType commandType = CommandType.Text, object paramCollection = null) where TEntity : new()
         {
+            var aggregateQuery = false;
             Func<DataSchema> func = () =>
             {
                 var dataSchema = new DataSchema();
@@ -41,6 +42,7 @@ namespace Repository.MsSql
                             schema = reader.GetSchemaTable();
                             var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
                             var mapper = new DataReaderMapper<TEntity>(columns, schema);
+                            aggregateQuery = mapper.AggregateQuery;
                             while (reader.Read())
                                 data.Add(mapper.MapFrom(reader));
                         }
@@ -53,7 +55,7 @@ namespace Repository.MsSql
                 return dataSchema;
             };
 
-            if (_useCache && commandType == CommandType.Text)
+            if (_useCache && commandType == CommandType.Text && !aggregateQuery)
             {
                 return _queryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<TEntity>;
             }
@@ -63,7 +65,7 @@ namespace Repository.MsSql
 
         public IEnumerable<object> ExecuteMultiQuery(string sql, CommandType commandType = CommandType.Text, object paramCollection = null, params Type[] types)
         {
-
+            var aggregateQuery = false;
             Func<DataSchema> func = () =>
             {
                 var dataSchema = new DataSchema();
@@ -79,6 +81,7 @@ namespace Repository.MsSql
                             schema = reader.GetSchemaTable();
                             var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToList();
                             var mapper = new DataReaderMapper<object>(columns, schema, types);
+                            aggregateQuery = mapper.AggregateQuery;
                             while (reader.Read())
                                 data.Add(mapper.MapFromMultpleTables(reader));
                         }
@@ -91,7 +94,7 @@ namespace Repository.MsSql
                 return dataSchema;
             };
 
-            if (_useCache && commandType == CommandType.Text)
+            if (_useCache && commandType == CommandType.Text && !aggregateQuery)
             {
                 return _queryCache.QueryStore(func, sql, _connectionString, paramCollection) as IEnumerable<object>;
             }

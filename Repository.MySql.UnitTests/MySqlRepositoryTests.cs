@@ -121,6 +121,26 @@ namespace Repository.MySql.UnitTests
             Assert.IsTrue(results.Any());
         }
 
+        [TestMethod]
+        public void Query_Aggregate_SingleTable()
+        {
+            const string sql = "SELECT COUNT(1) as TotalProducts,Name FROM nextdatalayer.products group by Name";
+
+            var result = _repository.Query<dynamic>(sql);
+
+            Assert.IsTrue(result.Any());
+        }
+
+        [TestMethod]
+        public void Query_Aggregate_Joins()
+        {
+            const string sql = "SELECT Count(1) as TotalRecords from nextdatalayer.products cross join nextdatalayer.productslog";
+
+            var result = _repository.Query<dynamic>(sql);
+
+            Assert.IsTrue(result.Any());
+        }
+
         #region helpers
 
         private static void InitializeDatabase()

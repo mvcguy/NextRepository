@@ -107,14 +107,14 @@ namespace NextRepository.MemCache.UnitTests
         public void QueryStore_Should_Allow_Concurrent_Tasks()
         {
             var tasks = new List<Task>();
-            var cache=new QueryCache();
+            var cache = new QueryCache();
+            const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
+            var param = new { Name = "%galaxy%" };
+
             for (var i = 0; i < 500; i++)
             {
                 var task = new Task(() =>
                 {
-                    const string sql = "SELECT top 10 * FROM PRODUCTS WHERE Name like @Name";
-                    var param = new { Name = "%galaxy%" };
-                    
                     Func<DataSchema> databaseOperation = () =>
                     {
                         var dataSchema = new DataSchema
@@ -129,7 +129,27 @@ namespace NextRepository.MemCache.UnitTests
                     Assert.IsNotNull(data);
                     Assert.IsTrue(data.Any());
                 });
-                
+
+                task.Start();
+                tasks.Add(task);
+            }
+
+            for (int i = 0; i < 1000; i++)
+            {
+                var task = new Task(() =>
+                  {
+                      cache.CleanCache();
+                  });
+                task.Start();
+                tasks.Add(task);
+            }
+
+            for (int i = 0; i < 1000; i++)
+            {
+                var task = new Task(() =>
+                {
+                    cache.InvalidateCache(sql, ConnectionString);
+                });
                 task.Start();
                 tasks.Add(task);
             }
